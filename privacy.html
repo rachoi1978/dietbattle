@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>개인정보처리방침 — Diet Battle</title>
+  <style>
+    :root {
+      --ink: #1a1816;
+      --muted: #6c6863;
+      --bg: #f6f3eb;
+      --panel: #fdfbf5;
+      --border: #e3decf;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      margin: 0;
+      padding: 24px 16px 64px;
+      line-height: 1.7;
+      -webkit-text-size-adjust: 100%;
+    }
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+      background: var(--panel);
+      border-radius: 16px;
+      padding: 32px 28px;
+      border: 1px solid var(--border);
+    }
+    h1 {
+      font-size: 24px;
+      margin: 0 0 4px;
+      letter-spacing: -0.3px;
+    }
+    .effective {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 28px;
+    }
+    h2 {
+      font-size: 16px;
+      margin: 28px 0 8px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      letter-spacing: -0.2px;
+    }
+    h2:first-of-type { padding-top: 0; border-top: none; margin-top: 0; }
+    p, li { font-size: 14px; color: #2b2924; }
+    ul, ol { padding-left: 22px; margin: 6px 0; }
+    li { margin: 4px 0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 8px 0;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #efeadc; font-weight: 600; }
+    .back {
+      display: inline-block;
+      margin-bottom: 16px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+    }
+    .back:hover { color: var(--ink); }
+    .contact-box {
+      background: #efeadc;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+    }
+    @media (max-width: 600px) {
+      body { padding: 16px 10px 48px; }
+      main { padding: 22px 18px; border-radius: 12px; }
+      h1 { font-size: 20px; }
+      h2 { font-size: 15px; }
+      p, li, td, th { font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <a href="/" class="back">← Diet Battle로 돌아가기</a>
+    <h1>개인정보처리방침</h1>
+    <p class="effective">시행일: 2026년 5월 22일</p>
+
+    <p>Diet Battle(이하 "본 서비스")은 이용자의 개인정보를 소중히 다루며, 「개인정보 보호법」을 비롯한 관련 법령을 준수합니다. 본 방침은 이용자가 제공하는 개인정보가 어떤 용도와 방식으로 수집·이용·보관되며, 어떠한 권리를 가지는지 안내합니다.</p>
+
+    <h2>1. 수집하는 개인정보 항목</h2>
+    <table>
+      <tr><th>구분</th><th>수집 항목</th><th>수집 방법</th></tr>
+      <tr>
+        <td>회원 식별</td>
+        <td>이메일, 이름, 프로필 이미지(선택)</td>
+        <td>카카오·Google 소셜 로그인</td>
+      </tr>
+      <tr>
+        <td>서비스 이용</td>
+        <td>키, 체중, 나이, 성별, 활동량, 건강 상태(당뇨·고혈압·고지혈증·지방간 등 선택), 식단 기록, 운동 기록, 물 섭취량</td>
+        <td>이용자가 직접 입력</td>
+      </tr>
+      <tr>
+        <td>자동 수집</td>
+        <td>접속 일시, 인증 토큰</td>
+        <td>Supabase 인증 시스템</td>
+      </tr>
+    </table>
+
+    <h2>2. 개인정보 처리 목적</h2>
+    <ul>
+      <li>회원 식별 및 본인 확인</li>
+      <li>다이어트·운동·식단 기록 저장 및 조회 서비스 제공</li>
+      <li>건강 지표 분석 및 맞춤형 정보 제시</li>
+      <li>다중 기기 간 데이터 동기화</li>
+      <li>서비스 개선을 위한 통계 분석</li>
+    </ul>
+
+    <h2>3. 개인정보 보유 및 이용 기간</h2>
+    <p>이용자의 개인정보는 회원 탈퇴 시 또는 수집·이용 목적 달성 시까지 보유합니다. 회원 탈퇴 요청 시 즉시 모든 개인정보가 삭제되며 복구되지 않습니다.</p>
+
+    <h2>4. 제3자 제공</h2>
+    <p>본 서비스는 이용자의 개인정보를 외부에 제공하지 않습니다. 단, 다음의 경우는 예외로 합니다.</p>
+    <ul>
+      <li>이용자가 사전에 동의한 경우</li>
+      <li>법령에 의해 요구되는 경우</li>
+    </ul>
+
+    <h2>5. 개인정보 처리 위탁</h2>
+    <p>본 서비스는 안정적인 운영을 위해 다음과 같이 개인정보 처리 업무를 위탁하고 있습니다.</p>
+    <table>
+      <tr><th>수탁 업체</th><th>위탁 업무</th></tr>
+      <tr>
+        <td>Supabase Inc.</td>
+        <td>회원 인증, 데이터베이스 저장 및 처리</td>
+      </tr>
+      <tr>
+        <td>Netlify Inc.</td>
+        <td>웹사이트 호스팅</td>
+      </tr>
+      <tr>
+        <td>Kakao Corp. / Google LLC</td>
+        <td>소셜 로그인 인증</td>
+      </tr>
+    </table>
+
+    <h2>6. 이용자의 권리</h2>
+    <p>이용자는 언제든지 다음의 권리를 행사할 수 있습니다.</p>
+    <ul>
+      <li>본인의 개인정보 열람·정정 요구</li>
+      <li>개인정보 삭제 및 처리 정지 요구</li>
+      <li>회원 탈퇴 (앱 내 로그아웃 후 문의)</li>
+    </ul>
+    <p>위 권리 행사는 아래 연락처로 문의 시 지체 없이 처리됩니다.</p>
+
+    <h2>7. 개인정보의 안전성 확보 조치</h2>
+    <ul>
+      <li>전송 구간 암호화 (HTTPS/TLS)</li>
+      <li>개인정보 저장 데이터베이스 접근 통제 (Row Level Security)</li>
+      <li>비밀번호 미보유 (소셜 로그인만 사용)</li>
+    </ul>
+
+    <h2>8. 개인정보 보호책임자</h2>
+    <div class="contact-box">
+      <strong>책임자</strong>: Diet Battle 운영자<br>
+      <strong>이메일</strong>: rachoi2017@gmail.com
+    </div>
+
+    <h2>9. 방침 변경</h2>
+    <p>본 방침은 법령 또는 서비스 변경에 따라 개정될 수 있으며, 변경 시 본 페이지에 시행일과 함께 공지합니다.</p>
+  </main>
+</body>
+</html>

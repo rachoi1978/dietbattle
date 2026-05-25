@@ -2,7 +2,6 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const STATE_PREFIX = "diet-battle-state-v10:";
 const today = new Date();
-const pendingMeals = new Map();
 
 let supabase = null;
 let authUser = null;
@@ -125,99 +124,6 @@ const CONDITION_LABELS = {
   fattyLiver: "지방간",
 };
 
-const foodBook = [
-  { keys: ["닭가슴살", "닭 가슴살"], kcal: 165, protein: 31, carbs: 0, fat: 3.6, sugar: 0, sodium: 74, cholesterol: 85, saturatedFat: 1, grams: 100 },
-  { keys: ["밥", "흰밥", "공기밥"], kcal: 310, protein: 6, carbs: 68, fat: 1, sugar: 0.1, sodium: 5, cholesterol: 0, saturatedFat: 0.3, grams: 210 },
-  { keys: ["현미밥"], kcal: 320, protein: 7, carbs: 66, fat: 2.3, sugar: 0.4, sodium: 8, cholesterol: 0, saturatedFat: 0.5, grams: 210 },
-  { keys: ["고구마"], kcal: 128, protein: 1.4, carbs: 30, fat: 0.2, sugar: 9.4, sodium: 41, cholesterol: 0, saturatedFat: 0, grams: 150 },
-  { keys: ["계란", "달걀"], kcal: 78, protein: 6.3, carbs: 0.6, fat: 5.3, sugar: 0.6, sodium: 62, cholesterol: 186, saturatedFat: 1.6, grams: 50 },
-  { keys: ["바나나"], kcal: 105, protein: 1.3, carbs: 27, fat: 0.4, sugar: 14, sodium: 1, cholesterol: 0, saturatedFat: 0.1, grams: 118 },
-  { keys: ["사과"], kcal: 95, protein: 0.5, carbs: 25, fat: 0.3, sugar: 19, sodium: 2, cholesterol: 0, saturatedFat: 0.1, grams: 180 },
-  { keys: ["그릭요거트", "요거트"], kcal: 130, protein: 9, carbs: 17, fat: 3, sugar: 9, sodium: 60, cholesterol: 15, saturatedFat: 2, grams: 170 },
-  { keys: ["김치찌개"], kcal: 350, protein: 22, carbs: 14, fat: 23, sugar: 4, sodium: 1420, cholesterol: 65, saturatedFat: 8, grams: 450 },
-  { keys: ["된장찌개"], kcal: 230, protein: 15, carbs: 18, fat: 10, sugar: 3, sodium: 1180, cholesterol: 30, saturatedFat: 3, grams: 400 },
-  { keys: ["라면"], kcal: 500, protein: 10, carbs: 78, fat: 16, sugar: 5, sodium: 1820, cholesterol: 0, saturatedFat: 7, grams: 550 },
-  { keys: ["샐러드"], kcal: 180, protein: 8, carbs: 16, fat: 9, sugar: 6, sodium: 380, cholesterol: 20, saturatedFat: 2, grams: 250 },
-  { keys: ["연어"], kcal: 208, protein: 20, carbs: 0, fat: 13, sugar: 0, sodium: 59, cholesterol: 55, saturatedFat: 3, grams: 100 },
-  { keys: ["소고기"], kcal: 250, protein: 26, carbs: 0, fat: 15, sugar: 0, sodium: 72, cholesterol: 78, saturatedFat: 6, grams: 100 },
-  { keys: ["돼지고기"], kcal: 290, protein: 25, carbs: 0, fat: 21, sugar: 0, sodium: 62, cholesterol: 80, saturatedFat: 7, grams: 100 },
-  { keys: ["두부"], kcal: 150, protein: 16, carbs: 4, fat: 9, sugar: 1, sodium: 12, cholesterol: 0, saturatedFat: 1.3, grams: 150 },
-  { keys: ["우유"], kcal: 122, protein: 8, carbs: 12, fat: 5, sugar: 12, sodium: 100, cholesterol: 20, saturatedFat: 3, grams: 240 },
-  { keys: ["빵"], kcal: 150, protein: 5, carbs: 28, fat: 2.5, sugar: 4, sodium: 230, cholesterol: 0, saturatedFat: 0.5, grams: 60 },
-  { keys: ["햄버거", "버거"], kcal: 550, protein: 25, carbs: 45, fat: 30, sugar: 8, sodium: 980, cholesterol: 85, saturatedFat: 11, grams: 220 },
-  { keys: ["피자"], kcal: 285, protein: 12, carbs: 36, fat: 10, sugar: 4, sodium: 640, cholesterol: 22, saturatedFat: 4.5, grams: 107 },
-  { keys: ["치킨"], kcal: 320, protein: 24, carbs: 9, fat: 21, sugar: 1, sodium: 540, cholesterol: 88, saturatedFat: 6, grams: 100 },
-  { keys: ["떡볶이"], kcal: 420, protein: 8, carbs: 82, fat: 7, sugar: 18, sodium: 1080, cholesterol: 0, saturatedFat: 2, grams: 350 },
-  { keys: ["파스타"], kcal: 560, protein: 20, carbs: 75, fat: 18, sugar: 7, sodium: 720, cholesterol: 35, saturatedFat: 7, grams: 380 },
-  { keys: ["프로틴", "단백질 쉐이크"], kcal: 120, protein: 24, carbs: 3, fat: 2, sugar: 1, sodium: 140, cholesterol: 5, saturatedFat: 1, grams: 35 },
-  { keys: ["콜라", "사이다", "탄산음료"], kcal: 140, protein: 0, carbs: 39, fat: 0, sugar: 39, sodium: 45, cholesterol: 0, saturatedFat: 0, grams: 355 },
-  { keys: ["아메리카노"], kcal: 5, protein: 0, carbs: 1, fat: 0, sugar: 0, sodium: 5, cholesterol: 0, saturatedFat: 0, grams: 240 },
-  { keys: ["라떼", "카페라떼"], kcal: 190, protein: 12, carbs: 18, fat: 7, sugar: 18, sodium: 115, cholesterol: 24, saturatedFat: 4.5, grams: 360 },
-  // ── 자주 먹는 한식·간식 추가 ──
-  { keys: ["만두", "왕만두", "군만두"], kcal: 230, protein: 9, carbs: 26, fat: 10, sugar: 1, sodium: 480, cholesterol: 18, saturatedFat: 3, grams: 100 },
-  { keys: ["김밥"], kcal: 320, protein: 9, carbs: 52, fat: 8, sugar: 3, sodium: 730, cholesterol: 35, saturatedFat: 2, grams: 230 },
-  { keys: ["떡볶이"], kcal: 380, protein: 8, carbs: 76, fat: 4, sugar: 14, sodium: 1100, cholesterol: 0, saturatedFat: 1, grams: 300 },
-  { keys: ["치킨", "프라이드치킨", "양념치킨"], kcal: 280, protein: 23, carbs: 11, fat: 16, sugar: 1, sodium: 540, cholesterol: 90, saturatedFat: 4, grams: 100 },
-  { keys: ["삼겹살"], kcal: 330, protein: 17, carbs: 0, fat: 28, sugar: 0, sodium: 56, cholesterol: 70, saturatedFat: 10, grams: 100 },
-  { keys: ["갈비", "소갈비", "돼지갈비"], kcal: 280, protein: 18, carbs: 5, fat: 21, sugar: 4, sodium: 620, cholesterol: 75, saturatedFat: 8, grams: 100 },
-  { keys: ["파스타", "스파게티"], kcal: 220, protein: 8, carbs: 32, fat: 7, sugar: 4, sodium: 480, cholesterol: 15, saturatedFat: 2, grams: 250 },
-  { keys: ["국수", "잔치국수", "칼국수"], kcal: 380, protein: 12, carbs: 65, fat: 7, sugar: 4, sodium: 1280, cholesterol: 25, saturatedFat: 2, grams: 500 },
-  { keys: ["비빔밥"], kcal: 560, protein: 18, carbs: 90, fat: 13, sugar: 8, sodium: 1100, cholesterol: 95, saturatedFat: 3, grams: 480 },
-  { keys: ["국밥", "순대국", "콩나물국밥"], kcal: 450, protein: 28, carbs: 50, fat: 14, sugar: 3, sodium: 1800, cholesterol: 95, saturatedFat: 5, grams: 600 },
-  { keys: ["짜장면"], kcal: 700, protein: 18, carbs: 110, fat: 21, sugar: 12, sodium: 1500, cholesterol: 28, saturatedFat: 5, grams: 650 },
-  { keys: ["짬뽕"], kcal: 660, protein: 28, carbs: 95, fat: 18, sugar: 6, sodium: 2200, cholesterol: 110, saturatedFat: 4, grams: 700 },
-  { keys: ["볶음밥"], kcal: 480, protein: 14, carbs: 72, fat: 14, sugar: 3, sodium: 980, cholesterol: 90, saturatedFat: 3, grams: 350 },
-  { keys: ["김치"], kcal: 18, protein: 1.5, carbs: 3, fat: 0.4, sugar: 1.5, sodium: 750, cholesterol: 0, saturatedFat: 0.1, grams: 100 },
-  { keys: ["죽", "전복죽", "소고기죽"], kcal: 90, protein: 4, carbs: 16, fat: 1.5, sugar: 1, sodium: 480, cholesterol: 12, saturatedFat: 0.4, grams: 300 },
-  { keys: ["과자", "스낵"], kcal: 540, protein: 5, carbs: 60, fat: 30, sugar: 22, sodium: 480, cholesterol: 0, saturatedFat: 13, grams: 100 },
-  { keys: ["초콜릿"], kcal: 540, protein: 6, carbs: 60, fat: 32, sugar: 50, sodium: 50, cholesterol: 10, saturatedFat: 19, grams: 100 },
-  { keys: ["견과류", "아몬드", "호두", "땅콩"], kcal: 600, protein: 20, carbs: 22, fat: 50, sugar: 4, sodium: 5, cholesterol: 0, saturatedFat: 5, grams: 100 },
-  { keys: ["떡", "가래떡", "절편"], kcal: 220, protein: 4, carbs: 50, fat: 0.5, sugar: 1, sodium: 8, cholesterol: 0, saturatedFat: 0.2, grams: 100 },
-  { keys: ["맥주"], kcal: 140, protein: 1, carbs: 11, fat: 0, sugar: 0, sodium: 14, cholesterol: 0, saturatedFat: 0, grams: 355 },
-  { keys: ["소주"], kcal: 120, protein: 0, carbs: 0, fat: 0, sugar: 0, sodium: 0, cholesterol: 0, saturatedFat: 0, grams: 180 },
-  // ── 2024-2026 트렌드 / 자주 검색되는 음식 ──
-  { keys: ["마라탕"], kcal: 178, protein: 9, carbs: 13, fat: 10, sugar: 2, sodium: 1800, cholesterol: 30, saturatedFat: 3, grams: 500 },
-  { keys: ["마라샹궈", "마라탕면"], kcal: 240, protein: 11, carbs: 22, fat: 12, sugar: 3, sodium: 1600, cholesterol: 35, saturatedFat: 4, grams: 400 },
-  { keys: ["탕후루"], kcal: 250, protein: 1, carbs: 62, fat: 0.2, sugar: 55, sodium: 5, cholesterol: 0, saturatedFat: 0, grams: 200 },
-  { keys: ["두바이초콜릿", "두바이 초콜릿"], kcal: 540, protein: 8, carbs: 55, fat: 32, sugar: 45, sodium: 80, cholesterol: 15, saturatedFat: 18, grams: 100 },
-  { keys: ["닭갈비"], kcal: 250, protein: 20, carbs: 14, fat: 13, sugar: 5, sodium: 850, cholesterol: 75, saturatedFat: 4, grams: 250 },
-  { keys: ["양꼬치"], kcal: 230, protein: 22, carbs: 0, fat: 16, sugar: 0, sodium: 380, cholesterol: 70, saturatedFat: 7, grams: 100 },
-  { keys: ["곱창", "막창", "대창"], kcal: 270, protein: 18, carbs: 1, fat: 22, sugar: 0, sodium: 320, cholesterol: 220, saturatedFat: 9, grams: 100 },
-  { keys: ["부대찌개"], kcal: 380, protein: 22, carbs: 18, fat: 25, sugar: 4, sodium: 1650, cholesterol: 70, saturatedFat: 9, grams: 500 },
-  { keys: ["감자탕"], kcal: 420, protein: 28, carbs: 22, fat: 22, sugar: 3, sodium: 1500, cholesterol: 85, saturatedFat: 7, grams: 600 },
-  { keys: ["닭한마리"], kcal: 380, protein: 38, carbs: 8, fat: 22, sugar: 1, sodium: 950, cholesterol: 130, saturatedFat: 6, grams: 500 },
-  { keys: ["삼계탕"], kcal: 480, protein: 42, carbs: 35, fat: 17, sugar: 1, sodium: 980, cholesterol: 140, saturatedFat: 4, grams: 700 },
-  { keys: ["갈비탕"], kcal: 350, protein: 28, carbs: 12, fat: 20, sugar: 2, sodium: 1200, cholesterol: 85, saturatedFat: 7, grams: 600 },
-  { keys: ["설렁탕", "곰탕"], kcal: 320, protein: 24, carbs: 14, fat: 18, sugar: 1, sodium: 1100, cholesterol: 80, saturatedFat: 6, grams: 600 },
-  { keys: ["보쌈"], kcal: 320, protein: 26, carbs: 4, fat: 22, sugar: 1, sodium: 480, cholesterol: 75, saturatedFat: 8, grams: 150 },
-  { keys: ["족발"], kcal: 290, protein: 22, carbs: 2, fat: 22, sugar: 0, sodium: 550, cholesterol: 95, saturatedFat: 8, grams: 150 },
-  { keys: ["회덮밥"], kcal: 480, protein: 25, carbs: 65, fat: 12, sugar: 6, sodium: 920, cholesterol: 75, saturatedFat: 2, grams: 400 },
-  { keys: ["초밥", "스시"], kcal: 50, protein: 3, carbs: 8, fat: 0.6, sugar: 1, sodium: 60, cholesterol: 8, saturatedFat: 0.2, grams: 20 },
-  { keys: ["사케동", "연어덮밥"], kcal: 560, protein: 32, carbs: 75, fat: 14, sugar: 7, sodium: 980, cholesterol: 80, saturatedFat: 3, grams: 400 },
-  { keys: ["로제떡볶이", "까르보떡볶이"], kcal: 520, protein: 14, carbs: 78, fat: 16, sugar: 18, sodium: 1280, cholesterol: 45, saturatedFat: 8, grams: 350 },
-  { keys: ["베이글"], kcal: 270, protein: 10, carbs: 53, fat: 1.5, sugar: 6, sodium: 530, cholesterol: 0, saturatedFat: 0.3, grams: 100 },
-  { keys: ["크로플", "크로와플"], kcal: 380, protein: 6, carbs: 38, fat: 22, sugar: 12, sodium: 280, cholesterol: 65, saturatedFat: 12, grams: 100 },
-  { keys: ["약과"], kcal: 410, protein: 4, carbs: 60, fat: 17, sugar: 32, sodium: 80, cholesterol: 0, saturatedFat: 4, grams: 100 },
-  { keys: ["오트밀", "오트밀죽"], kcal: 70, protein: 2.4, carbs: 12, fat: 1.4, sugar: 0.5, sodium: 4, cholesterol: 0, saturatedFat: 0.2, grams: 100 },
-  { keys: ["단백질바", "프로틴바"], kcal: 220, protein: 18, carbs: 22, fat: 8, sugar: 8, sodium: 180, cholesterol: 5, saturatedFat: 3, grams: 60 },
-  { keys: ["그래놀라"], kcal: 470, protein: 11, carbs: 64, fat: 20, sugar: 24, sodium: 60, cholesterol: 0, saturatedFat: 3, grams: 100 },
-  // ── 단백질·다이어트 인기 브랜드 (실제 제품 영양정보) ──
-  { keys: ["닥터유 단백질바", "닥터유단백질바", "오리온 단백질바", "닥터유"], kcal: 249, protein: 12, carbs: 19, fat: 15, sugar: 13, sodium: 160, cholesterol: 5, saturatedFat: 3.3, grams: 50 },
-  { keys: ["닥터유 단백질바 크런치", "닥터유 크런치", "프로 단백질바 크런치"], kcal: 355, protein: 24, carbs: 22, fat: 19, sugar: 9, sodium: 200, cholesterol: 9, saturatedFat: 6, grams: 70 },
-  { keys: ["닥터유 단백질바 미니", "단백질바 미니", "닥터유 프로 미니"], kcal: 51, protein: 2.5, carbs: 4.3, fat: 2.6, sugar: 2, sodium: 2, cholesterol: 0.5, saturatedFat: 0.8, grams: 10 },
-  { keys: ["닥터유 에너지바", "에너지바"], kcal: 188, protein: 6, carbs: 20, fat: 10, sugar: 15, sodium: 55, cholesterol: 0, saturatedFat: 2.7, grams: 40 },
-  { keys: ["하이뮨", "하이뮨 프로틴", "하이뮨 프로틴밸런스", "프로틴밸런스", "하이뮨 액티브"], kcal: 120, protein: 20, carbs: 8, fat: 2, sugar: 3, sodium: 110, cholesterol: 5, saturatedFat: 0.5, grams: 250 },
-  { keys: ["셀렉스", "셀렉스 프로핏", "셀렉스 코어프로틴"], kcal: 99, protein: 20, carbs: 5, fat: 0, sugar: 0, sodium: 80, cholesterol: 0, saturatedFat: 0, grams: 330 },
-  { keys: ["더단백", "빙그레 더단백", "더단백 드링크"], kcal: 130, protein: 20, carbs: 10, fat: 2, sugar: 4, sodium: 140, cholesterol: 5, saturatedFat: 0.5, grams: 250 },
-  { keys: ["마이프로틴", "임팩트 웨이", "웨이 프로틴"], kcal: 98, protein: 20, carbs: 1, fat: 1, sugar: 0.5, sodium: 50, cholesterol: 5, saturatedFat: 0.5, grams: 25 },
-  { keys: ["데이밀", "오뚜기 데이밀", "오뚜기 프로틴", "데이 프로틴"], kcal: 130, protein: 15, carbs: 13, fat: 3, sugar: 7, sodium: 100, cholesterol: 5, saturatedFat: 1, grams: 200 },
-  { keys: ["뉴케어"], kcal: 200, protein: 9, carbs: 30, fat: 5, sugar: 10, sodium: 130, cholesterol: 5, saturatedFat: 1, grams: 200 },
-  { keys: ["곤약", "곤약면", "곤약밥"], kcal: 8, protein: 0, carbs: 2, fat: 0, sugar: 0, sodium: 7, cholesterol: 0, saturatedFat: 0, grams: 100 },
-  { keys: ["그릭요거트", "그릭"], kcal: 60, protein: 10, carbs: 3, fat: 1.5, sugar: 3, sodium: 35, cholesterol: 8, saturatedFat: 1, grams: 100 },
-  { keys: ["고단백 두유", "검은콩 두유", "단백질 두유"], kcal: 130, protein: 12, carbs: 10, fat: 4, sugar: 5, sodium: 100, cholesterol: 0, saturatedFat: 0.5, grams: 190 },
-  { keys: ["닭가슴살 시판품", "랠리", "Rally 닭가슴살", "허닭", "프레시지"], kcal: 110, protein: 22, carbs: 0, fat: 2, sugar: 0, sodium: 300, cholesterol: 60, saturatedFat: 0.5, grams: 100 },
-  { keys: ["프로틴쉐이크", "프로틴 쉐이크"], kcal: 100, protein: 18, carbs: 3, fat: 0.5, sugar: 1, sodium: 80, cholesterol: 5, saturatedFat: 0.3, grams: 25 },
-];
 
 async function initAuth() {
   try {
@@ -1619,324 +1525,6 @@ function exerciseKcal(weight, met, minutes) {
 // 식약처 DB 검색 (Supabase RPC) — Phase 1 인프라
 // ============================================================
 // 유저가 입력하는 통상 단어를 식약처 DB 명명에 맞게 변환
-const FOOD_ALIASES = {
-  "닭가슴살": "닭고기 가슴",
-  "닭다리": "닭고기 다리",
-  "계란": "달걀",
-  "삼겹살": "돼지고기 삼겹",
-  "목살": "돼지고기 목심",
-  "갈비": "소고기 갈비",
-  "등심": "소고기 등심",
-  "치킨": "닭고기 튀김",
-  "공기밥": "백미밥",
-  "흰밥": "백미밥",
-  "현미밥": "현미 밥",
-  "햄": "햄_가공",
-  "참치캔": "참치 통조림",
-};
-const foodSearchCache = new Map();
-
-async function searchFoodInDB(query) {
-  const q = (query || "").trim();
-  if (!q || !supabase) return [];
-  if (foodSearchCache.has(q)) return foodSearchCache.get(q);
-
-  // alias 변환 시도 (변환된 단어 우선 검색, 없으면 원본)
-  const candidates = FOOD_ALIASES[q] ? [FOOD_ALIASES[q], q] : [q];
-
-  for (const cand of candidates) {
-    try {
-      const { data, error } = await supabase.rpc("search_foods", { query: cand, max_results: 5 });
-      if (error) { console.warn("search_foods 오류:", error); continue; }
-      if (!data || data.length === 0) continue;
-
-      const results = data.map((r) => ({
-        keys: [r.name, r.rep_name].filter(Boolean),
-        kcal: r.kcal || 0,
-        protein: r.protein || 0,
-        carbs: r.carbs || 0,
-        fat: r.fat || 0,
-        sugar: r.sugar || 0,
-        sodium: r.sodium || 0,
-        cholesterol: r.cholesterol || 0,
-        saturatedFat: r.saturated_fat || 0,
-        grams: r.serving_weight_g || parseFloat(r.serving_size) || 100,
-        source: "mfds",
-        category: r.category,
-        matchScore: r.match_score,
-      }));
-      foodSearchCache.set(q, results);
-      return results;
-    } catch (err) {
-      console.warn("Supabase 검색 실패:", err);
-    }
-  }
-  foodSearchCache.set(q, []);
-  return [];
-}
-
-async function analyzeMeal(raw) {
-  const pieces = raw
-    .split(/[,/\n]+/)
-    .map((piece) => piece.trim())
-    .filter(Boolean);
-  const items = pieces.length ? pieces : [raw.trim()];
-  const result = { kcal: 0, protein: 0, carbs: 0, fat: 0, sugar: 0, sodium: 0, cholesterol: 0, saturatedFat: 0, found: [] };
-
-  for (const item of items) {
-    const normalized = item.replace(/\s+/g, "");
-    const cleanName = stripQuantity(item) || item; // 검색용 (수량 제거)
-
-    // 1단계: 로컬 foodBook (즉시, 무료)
-    let food = foodBook.find((entry) =>
-      entry.keys.some((key) => normalized.includes(key.replace(/\s+/g, "")))
-    );
-    let label;
-
-    if (food) {
-      label = `${food.keys[0]}`;
-    } else {
-      // 2단계: 식약처 DB
-      const dbResults = await searchFoodInDB(cleanName);
-      if (dbResults.length > 0) {
-        food = dbResults[0];
-        const matched = food.keys[0];
-        const servingHint = food.grams ? `${food.grams}g` : (food.category || "식약처");
-        label = `${matched} (${servingHint})`;
-      } else {
-        // 3단계: AI 캐시 (이전에 Claude로 분석한 음식들)
-        const cached = await searchAiCache(cleanName);
-        if (cached) {
-          food = cached;
-          label = `${cached.keys[0]} (AI 캐시)`;
-        } else {
-          // 4단계: Claude API 호출 → 결과 캐시에 저장
-          try {
-            const aiResult = await analyzeFoodWithAI(cleanName);
-            if (aiResult && aiResult.kcal > 0) {
-              food = aiResultToFood(aiResult);
-              label = `${aiResult.name} (AI 분석)`;
-              // 캐시에 저장 (백그라운드, 실패해도 무시)
-              saveAiCache(aiResult).catch((e) => console.warn("AI 캐시 저장 실패:", e));
-            } else {
-              throw new Error("AI 응답 부족");
-            }
-          } catch (err) {
-            // 5단계: 모든 게 실패하면 폴백 추정
-            console.warn(`AI 분석 실패 (${item}):`, err);
-            const fallback = estimateUnknown(item);
-            addMacro(result, fallback, 1);
-            result.found.push(`${item}: 일반식 추정`);
-            continue;
-          }
-        }
-      }
-    }
-
-    const multiplier = servingMultiplier(item, food);
-    addMacro(result, food, multiplier);
-    result.found.push(`${label} × ${multiplier.toFixed(1)}`);
-  }
-
-  return {
-    id: makeId(),
-    title: smartTitle(raw),
-    raw,
-    kcal: Math.round(result.kcal),
-    protein: roundOne(result.protein),
-    carbs: roundOne(result.carbs),
-    fat: roundOne(result.fat),
-    sugar: roundOne(result.sugar),
-    sodium: Math.round(result.sodium),
-    cholesterol: Math.round(result.cholesterol),
-    saturatedFat: roundOne(result.saturatedFat),
-    found: result.found,
-    createdAt: new Date().toISOString(),
-  };
-}
-
-function applyMeal(id) {
-  const meal = pendingMeals.get(id);
-  if (!meal) return;
-  getDay().meals.push(meal);
-  pendingMeals.delete(id);
-  resetMealEntry();
-  render();
-}
-
-function cancelMeal(id) {
-  pendingMeals.delete(id);
-  resetMealEntry();
-}
-
-function addMacro(total, food, multiplier) {
-  total.kcal += (food.kcal || 0) * multiplier;
-  total.protein += (food.protein || 0) * multiplier;
-  total.carbs += (food.carbs || 0) * multiplier;
-  total.fat += (food.fat || 0) * multiplier;
-  total.sugar = (total.sugar || 0) + (food.sugar || 0) * multiplier;
-  total.sodium = (total.sodium || 0) + (food.sodium || 0) * multiplier;
-  total.cholesterol = (total.cholesterol || 0) + (food.cholesterol || 0) * multiplier;
-  total.saturatedFat = (total.saturatedFat || 0) + (food.saturatedFat || 0) * multiplier;
-}
-
-// 검색용 — "만두 3개 150g" → "만두" (수량·단위 제거, 음식명 보존)
-function stripQuantity(text) {
-  return text
-    // 1) 숫자 + 단위
-    .replace(/\d+(?:\.\d+)?\s*(g|kg|ml|l|cc|그램|키로|밀리|리터)/gi, "")
-    .replace(/\d+\s*(개|그릇|컵|잔|병|봉지|봉|팩|장|쪽|조각|인분|덩이|마리|알|줄|단)/gi, "")
-    .replace(/\b\d+(?:\.\d+)?\b/g, "")
-    // 2) 한국어 수사 + 단위 (단위 없으면 안 자름 → "만두"의 "두" 보존)
-    .replace(/(한|두|세|네|다섯|여섯|일곱|여덟|아홉|열|반|절반)\s*(개|그릇|컵|잔|병|봉지|봉|팩|장|쪽|조각|인분|덩이|마리|알|줄|단)/g, "")
-    // 3) 양 표현
-    .replace(/(약간|조금|많이|소량|대량)/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function servingMultiplier(item, food) {
-  // 1) 그램/ml 명시: "150g", "250ml" → 양 / 1인분 기준량
-  const unitMatch = item.match(/(\d+(?:\.\d+)?)\s*(g|그램|ml|밀리|cc)/i);
-  if (unitMatch) {
-    const amount = Number(unitMatch[1]);
-    // food.grams가 비정상(0이거나 너무 작음)이면 100 기준으로 폴백
-    const baseAmount = (food.grams && food.grams >= 10) ? food.grams : 100;
-    const m = amount / baseAmount;
-    return Math.max(0.05, Math.min(20, m));
-  }
-  // 2) kg/l 명시
-  const bigMatch = item.match(/(\d+(?:\.\d+)?)\s*(kg|키로|리터)\b/i);
-  if (bigMatch) {
-    const amount = Number(bigMatch[1]) * 1000;
-    const baseAmount = (food.grams && food.grams >= 10) ? food.grams : 100;
-    return Math.max(0.05, Math.min(20, amount / baseAmount));
-  }
-  // 3) 반·절반
-  if (/(반|절반)/.test(item)) return 0.5;
-  // 4) 개수: "3개", "2그릇", "1인분", "2팩" 등
-  const countMatch = item.match(/(\d+(?:\.\d+)?)\s*(개|그릇|컵|잔|병|봉지|봉|팩|장|쪽|조각|인분|덩이|마리|알|줄|단)/);
-  if (countMatch) {
-    const n = Number(countMatch[1]);
-    return Math.max(0.05, Math.min(20, n));
-  }
-  // 5) 한국어 수사
-  const koreanNums = { 한: 1, 두: 2, 세: 3, 네: 4, 다섯: 5 };
-  for (const [word, n] of Object.entries(koreanNums)) {
-    if (item.includes(word + "개") || item.includes(word + "그릇") || item.includes(word + "잔") || item.includes(word + "팩")) return n;
-  }
-  // 6) 단독 숫자 (수량 단위 없이) — 신뢰도 낮으므로 1로 처리
-  return 1;
-}
-
-// ============================================================
-// AI 캐시 + Claude API 분석 (음식 lookup 3-4단계)
-// ============================================================
-
-// AI 분석 결과를 foodBook 항목 형태로 변환
-function aiResultToFood(aiResult) {
-  return {
-    keys: [aiResult.name],
-    kcal: aiResult.kcal || 0,
-    protein: aiResult.protein || 0,
-    carbs: aiResult.carbs || 0,
-    fat: aiResult.fat || 0,
-    sugar: aiResult.sugar || 0,
-    sodium: aiResult.sodium || 0,
-    cholesterol: aiResult.cholesterol || 0,
-    saturatedFat: aiResult.saturated_fat || 0,
-    grams: aiResult.serving_grams || 100,
-  };
-}
-
-// Supabase ai_food_cache에서 검색
-async function searchAiCache(query) {
-  if (!supabase) return null;
-  try {
-    const { data, error } = await supabase.rpc("search_ai_cache", { query, max_results: 1 });
-    if (error) {
-      console.warn("ai_food_cache 검색 실패:", error);
-      return null;
-    }
-    if (!data || data.length === 0) return null;
-    const r = data[0];
-    // hit_count 증가 (백그라운드)
-    supabase
-      .from("ai_food_cache")
-      .update({ hit_count: 1, last_used_at: new Date().toISOString() })
-      .eq("name", r.name)
-      .then(() => {})
-      .catch(() => {});
-    return {
-      keys: [r.name],
-      kcal: r.kcal || 0,
-      protein: r.protein || 0,
-      carbs: r.carbs || 0,
-      fat: r.fat || 0,
-      sugar: r.sugar || 0,
-      sodium: r.sodium || 0,
-      cholesterol: r.cholesterol || 0,
-      saturatedFat: r.saturated_fat || 0,
-      grams: r.serving_grams || 100,
-    };
-  } catch (err) {
-    console.warn("ai_food_cache 예외:", err);
-    return null;
-  }
-}
-
-// Claude API 호출 (Netlify Function 경유)
-async function analyzeFoodWithAI(name) {
-  const res = await fetch("/.netlify/functions/analyze-food", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name }),
-  });
-  if (!res.ok) {
-    let detail = "";
-    try {
-      const errData = await res.json();
-      detail = errData.error || JSON.stringify(errData);
-    } catch {}
-    throw new Error(`HTTP ${res.status} — ${detail}`);
-  }
-  return await res.json();
-}
-
-// AI 분석 결과를 ai_food_cache에 저장 (모든 유저 공유)
-async function saveAiCache(aiResult, source = "ai") {
-  if (!supabase || !aiResult || !aiResult.name) return;
-  try {
-    const { error } = await supabase.from("ai_food_cache").upsert(
-      {
-        name: aiResult.name,
-        serving_grams: aiResult.serving_grams || 100,
-        kcal: aiResult.kcal || 0,
-        protein: aiResult.protein || 0,
-        carbs: aiResult.carbs || 0,
-        fat: aiResult.fat || 0,
-        sugar: aiResult.sugar || 0,
-        sodium: aiResult.sodium || 0,
-        cholesterol: aiResult.cholesterol || 0,
-        saturated_fat: aiResult.saturated_fat || 0,
-        trans_fat: aiResult.trans_fat || 0,
-        source,
-        last_used_at: new Date().toISOString(),
-      },
-      { onConflict: "name" }
-    );
-    if (error) throw error;
-  } catch (err) {
-    console.warn("ai_food_cache 저장 실패:", err);
-  }
-}
-
-function estimateUnknown(item) {
-  if (item.includes("국") || item.includes("찌개")) return { kcal: 280, protein: 18, carbs: 18, fat: 15, sugar: 3, sodium: 1100, cholesterol: 40, saturatedFat: 5 };
-  if (item.includes("과자") || item.includes("디저트")) return { kcal: 360, protein: 4, carbs: 48, fat: 18, sugar: 22, sodium: 280, cholesterol: 18, saturatedFat: 8 };
-  if (item.includes("튀김") || item.includes("볶음")) return { kcal: 520, protein: 18, carbs: 48, fat: 28, sugar: 4, sodium: 720, cholesterol: 55, saturatedFat: 9 };
-  return { kcal: 300, protein: 14, carbs: 34, fat: 12, sugar: 5, sodium: 480, cholesterol: 30, saturatedFat: 4 };
-}
 
 function smartTitle(raw) {
   const compact = raw.replace(/\s+/g, " ").trim();
@@ -1971,34 +1559,50 @@ async function submitMeal(event) {
   const raw = els.mealInput.value.trim();
   if (!raw) return;
 
-  // 검색 중 로딩 표시
-  els.mealEntryForm.classList.add("is-hidden");
-  els.mealEntryLog.innerHTML = `
-    <div class="analysis-result">
-      <p class="section-label">AI 분석 결과</p>
-      <p style="opacity:0.7;">식약처 DB에서 영양 정보 검색 중...</p>
-    </div>
-  `;
+  // OCR 결과 모달 재사용 — 로딩 상태로 열기
+  els.ocrModal.classList.remove("is-hidden");
+  els.ocrForm.classList.add("is-hidden");
+  if (els.ocrHint) els.ocrHint.textContent = "Gemini가 영양정보를 분석 중입니다...";
 
-  const meal = await analyzeMeal(raw);
-  pendingMeals.set(meal.id, meal);
-  els.mealEntryLog.innerHTML = `
-    <div class="analysis-result">
-      <p class="section-label">AI 분석 결과</p>
-      <h3>${escapeHTML(meal.title)}</h3>
-      <div class="analysis-grid">
-        <span>${meal.kcal}kcal</span>
-        <span>P ${meal.protein}g</span>
-        <span>C ${meal.carbs}g</span>
-        <span>F ${meal.fat}g</span>
-      </div>
-      <p>${escapeHTML(meal.found.join(", "))}</p>
-      <div class="analysis-actions">
-        <button class="apply-meal-button" type="button" data-apply-meal="${meal.id}">저장</button>
-        <button class="cancel-meal-button" type="button" data-cancel-meal="${meal.id}">다시 입력</button>
-      </div>
-    </div>
-  `;
+  // 기존 로딩/오류 정리
+  const oldEl = els.ocrModal.querySelector(".ocr-loading, .ocr-error");
+  if (oldEl) oldEl.remove();
+
+  const loading = document.createElement("div");
+  loading.className = "ocr-loading";
+  loading.textContent = "분석 중...";
+  els.ocrForm.parentElement.insertBefore(loading, els.ocrForm);
+
+  try {
+    const res = await fetch("/.netlify/functions/analyze-food", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: raw }),
+    });
+    loading.remove();
+
+    if (!res.ok) {
+      let detail = "";
+      try {
+        const errData = await res.json();
+        detail = errData.error || JSON.stringify(errData);
+        if (errData.detail) detail += ` — ${errData.detail}`;
+      } catch {
+        try { detail = (await res.text()).slice(0, 300); } catch {}
+      }
+      showOcrError(`HTTP ${res.status} — ${detail || "응답 없음"}`);
+      return;
+    }
+    const data = await res.json();
+    populateOcrForm(data);
+    if (els.ocrHint) els.ocrHint.textContent = "값을 확인하고 식단에 추가하거나 내 음식으로 저장하세요.";
+    els.ocrForm.classList.remove("is-hidden");
+    // 입력창 비우기
+    els.mealInput.value = "";
+  } catch (err) {
+    loading.remove();
+    showOcrError(err.message || "분석 실패");
+  }
 }
 
 function escapeHTML(value) {
@@ -2034,12 +1638,6 @@ els.resetProfile.addEventListener("click", () => {
 els.waterPlus.addEventListener("click", () => adjustWater(100));
 els.waterMinus.addEventListener("click", () => adjustWater(-100));
 els.mealEntryForm.addEventListener("submit", submitMeal);
-els.mealEntryLog.addEventListener("click", (event) => {
-  const applyBtn = event.target.closest("[data-apply-meal]");
-  if (applyBtn) { applyMeal(applyBtn.getAttribute("data-apply-meal")); return; }
-  const cancelBtn = event.target.closest("[data-cancel-meal]");
-  if (cancelBtn) cancelMeal(cancelBtn.getAttribute("data-cancel-meal"));
-});
 els.exerciseSteppers.addEventListener("click", (event) => {
   const button = event.target.closest("[data-exercise]");
   if (!button) return;

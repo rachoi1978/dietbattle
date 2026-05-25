@@ -1,0 +1,9 @@
+# Netlify 배포 설정 — Netlify Drop 또는 CLI 모두 호환
+# functions 디렉토리를 명시적으로 지정해서 자동 감지 실패 방지
+
+[build]
+  publish = "."
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"

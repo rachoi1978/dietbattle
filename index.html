@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Diet Battle</title>
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <link rel="apple-touch-icon" href="/logo.svg" />
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/[email protected]/iconfont/tabler-icons.min.css" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <defs>
+        <symbol id="logo-d" viewBox="0 0 96 96">
+          <rect width="96" height="96" rx="22" fill="#d94040"/>
+          <path d="M 8 10 L 24 10 Q 84 10 84 48 Q 84 86 24 86 L 8 86 Z M 24 20 L 24 20 Q 79 20 79 48 Q 79 76 24 76 L 24 76 Z" fill="#fff" fill-rule="evenodd"/>
+          <g fill="#fff">
+            <path transform="translate(25 62.26) scale(0.02517 -0.02517)" d="M198 0V1118H244V0ZM220.3 1373Q201 1373 187 1386.9Q173 1400.8 173 1420.2Q173 1440 187 1453.5Q201 1467 220.3 1467Q240 1467 253.5 1453.4Q267 1439.9 267 1420.3Q267 1401 253.5 1387Q240 1373 220.3 1373Z"/>
+            <path transform="translate(36.12 62.26) scale(0.02517 -0.02517)" d="M616 -24Q470 -24 360.5 52.5Q251 129 190.5 260.5Q130 392 130 556Q130 720 191 851Q252 982 357 1058Q462 1134 594 1134Q692 1134 775 1092.5Q858 1051 920 976.5Q982 902 1016 802Q1050 702 1050 584V558H154V604H1025L1005 584Q1005 724 951.5 838.5Q898 953 805.5 1020.5Q713 1088 594 1088Q479 1088 384 1019.5Q289 951 232.5 833.5Q176 716 176 568V562Q176 415 227.5 292.5Q279 170 377.5 96Q476 22 616 22Q720 22 790 58.5Q860 95 903 143Q946 191 966 224L1004 198Q979 156 929.5 104Q880 52 802.5 14Q725 -24 616 -24Z"/>
+            <path transform="translate(65.62 62.26) scale(0.02517 -0.02517)" d="M452 1118V1072H10V1118ZM174 1384H220V213Q220 113 270.5 65.5Q321 18 407 40Q415 42 424 44.5Q433 47 441 49L452 4Q443 2 433.5 -0.5Q424 -3 415 -5Q303 -32 238.5 32.5Q174 97 174 213Z"/>
+          </g>
+        </symbol>
+        <symbol id="logo-wordmark" viewBox="0 0 1015 186">
+          <defs>
+            <linearGradient id="dietG" gradientUnits="userSpaceOnUse" x1="20" y1="0" x2="378.89" y2="0">
+              <stop offset="0%" stop-color="#a02828"/><stop offset="100%" stop-color="#f4a8a8"/>
+            </linearGradient>
+            <linearGradient id="battleG" gradientUnits="userSpaceOnUse" x1="438.89" y1="0" x2="994.65" y2="0">
+              <stop offset="0%" stop-color="#f4a8a8"/><stop offset="100%" stop-color="#a02828"/>
+            </linearGradient>
+          </defs>
+          <g transform="translate(20 165.51)" fill="url(#dietG)">
+            <path transform="translate(0 0) scale(0.09766 -0.09766)" d="M670 0H262V344H654Q765 344 843.5 379Q922 414 963 501.5Q1004 589 1004 744Q1004 900 962 987.5Q920 1075 839.5 1110.5Q759 1146 642 1146H256V1490H664Q894 1490 1061 1400.5Q1228 1311 1319 1144Q1410 977 1410 744Q1410 512 1319.5 345Q1229 178 1063 89Q897 0 670 0ZM500 1490V0H96V1490Z"/>
+            <path transform="translate(144.53 0) scale(0.09766 -0.09766)" d="M147.9 0V1118H367.9V0ZM258.5 1288.6Q202 1288.6 161.2 1327Q120.4 1365.4 120.4 1419.2Q120.4 1474.1 161.2 1512.1Q202 1550 258.5 1550Q315.9 1550 356.7 1512.1Q397.5 1474.2 397.5 1419.3Q397.5 1365.4 356.7 1327Q315.9 1288.6 258.5 1288.6Z"/>
+            <path transform="translate(194.92 0) scale(0.09766 -0.09766)" d="M624 -24Q467.3 -24 352.5 49.5Q237.7 123 175.2 252.8Q112.7 382.7 112.7 552Q112.7 721.3 174.3 852.3Q236 983.3 346.7 1058Q457.3 1132.7 602.7 1132.7Q694.7 1132.7 780 1099.2Q865.3 1065.7 933 997.2Q1000.7 928.7 1040 824Q1079.3 719.3 1079.3 576.7V518H202V634.7H1006.3L943.7 590.7Q943.7 710.7 902.8 805.8Q862 901 785.8 955.8Q709.7 1010.7 602.7 1010.7Q497 1010.7 417.3 954.8Q337.7 899 293.5 806.8Q249.3 714.7 249.3 604.7V535.3Q249.3 403.7 295.2 305.2Q341 206.7 425.5 152.3Q510 98 624.7 98Q703.3 98 762.7 122.8Q822 147.7 862.3 189.3Q902.7 231 923.3 280L1052 239.3Q1026.3 169.3 968.5 109.3Q910.7 49.3 823.8 12.7Q737 -24 624 -24Z"/>
+            <path transform="translate(310.84 0) scale(0.09766 -0.09766)" d="M452 1118V1072H10V1118ZM174 1384H220V213Q220 113 270.5 65.5Q321 18 407 40Q415 42 424 44.5Q433 47 441 49L452 4Q443 2 433.5 -0.5Q424 -3 415 -5Q303 -32 238.5 32.5Q174 97 174 213Z"/>
+          </g>
+          <g transform="translate(438.89 165.51)" fill="url(#battleG)">
+            <path transform="translate(0 0) scale(0.09766 -0.09766)" d="M232 0V1490H696Q821 1490 910 1444.5Q999 1399 1046.5 1314Q1094 1229 1094 1112Q1094 1024 1067.5 951Q1041 878 990.5 828Q940 778 868 760V754Q942 747 1007 697.5Q1072 648 1112 566.5Q1152 485 1152 382Q1152 267 1104 181Q1056 95 965 47.5Q874 0 746 0ZM278 46H746Q910 46 1008 138.5Q1106 231 1106 382Q1106 485 1060 564.5Q1014 644 932.5 689Q851 734 746 734H278ZM278 780H746Q848 780 915 826Q982 872 1015 947.5Q1048 1023 1048 1112Q1048 1270 953.5 1357Q859 1444 696 1444H278Z"/>
+            <path transform="translate(127.93 0) scale(0.09766 -0.09766)" d="M464.7 -25.3Q363.3 -25.3 279.7 14Q196 53.3 146.3 129Q96.7 204.7 96.7 312.7Q96.7 395.7 128 452.3Q159.3 509 217 545.5Q274.7 582 353.5 603.2Q432.3 624.3 527.3 636Q620 647.7 684.8 656.2Q749.7 664.7 784.2 683.8Q818.7 703 818.7 744.7V770.7Q818.7 846.3 788.3 900Q758 953.7 699.7 982.8Q641.3 1012 557.3 1012Q477.7 1012 417.7 987.5Q357.7 963 318.2 923.3Q278.7 883.7 258.7 836.7L128.7 880.7Q166.3 972 233.2 1027.2Q300 1082.3 383.8 1107.5Q467.7 1132.7 554 1132.7Q619.7 1132.7 689.7 1115.3Q759.7 1098 819.7 1056.3Q879.7 1014.7 916.8 942.2Q954 869.7 954 758.7V0H820.7V176.7H810.7Q786.7 125.7 740 79.3Q693.3 33 624.7 3.8Q556 -25.3 464.7 -25.3ZM485.3 96Q587.3 96 662 141.2Q736.7 186.3 777.7 262.3Q818.7 338.3 818.7 428.7V588Q804.3 574.3 770.2 563.3Q736 552.3 692.5 544Q649 535.7 605.2 529.8Q561.3 524 528 520Q434.7 509 368.3 484Q302 459 267.3 416.2Q232.7 373.3 232.7 306.7Q232.7 240 265.7 193Q298.7 146 355.8 121Q413 96 485.3 96Z"/>
+            <path transform="translate(237.79 0) scale(0.09766 -0.09766)" d="M626.4 1118V939.2H20V1118ZM183.3 1384H403.3V302.4Q403.3 234.6 431.5 203.2Q459.8 171.7 525.2 171.7Q542.4 171.7 570.3 175.8Q598.3 179.9 618.3 183.9L657.3 7.6Q621.9 -4 581.8 -9.3Q541.7 -14.5 503.3 -14.5Q350.5 -14.5 266.9 63.7Q183.3 141.9 183.3 284.3Z"/>
+            <path transform="translate(305.86 0) scale(0.09766 -0.09766)" d="M669.1 1118V901.9H20V1118ZM176.3 1384H456.2V321.1Q456.2 264.1 481.1 237.2Q506 210.4 563 210.4Q580.5 210.4 610.6 214.6Q640.7 218.8 657.7 222.8L699.7 10.1Q653.2 -4 606.2 -9.7Q559.3 -15.4 515.7 -15.4Q351.4 -15.4 263.8 65.4Q176.3 146.2 176.3 296.7Z"/>
+            <path transform="translate(377.83 0) scale(0.09766 -0.09766)" d="M464.2 1490V0H115.4V1490Z"/>
+            <path transform="translate(434.47 0) scale(0.09766 -0.09766)" d="M638 -20Q459 -20 329.5 48.5Q200 117 131 246Q62 375 62 556Q62 729 131.5 858.5Q201 988 328 1060Q455 1132 628 1132Q755 1132 857.5 1092.5Q960 1053 1033 978.5Q1106 904 1145 798Q1184 692 1184 558V466H186V686H996L808 640Q808 708 788 754.5Q768 801 729 825.5Q690 850 632 850Q574 850 535 825.5Q496 801 476 754.5Q456 708 456 640V480Q456 406 479.5 357.5Q503 309 546 285.5Q589 262 646 262Q687 262 720.5 273.5Q754 285 778 306.5Q802 328 814 359L1168 307Q1140 207 1069 133.5Q998 60 889.5 20Q781 -20 638 -20Z"/>
+          </g>
+        </symbol>
+      </defs>
+    </svg>
+
+    <main class="auth-screen" id="auth-screen">
+      <section class="auth-panel">
+        <div class="auth-brand">
+          <svg class="auth-wordmark" viewBox="0 0 1015 186" aria-label="Diet Battle"><use href="#logo-wordmark"/></svg>
+          <p class="eyebrow">AI diet calendar</p>
+        </div>
+        <div class="auth-grid social-only">
+          <section class="auth-card">
+            <div>
+              <p class="section-label">Login</p>
+              <h2>계정으로 시작</h2>
+            </div>
+            <button class="kakao-button" id="login-kakao" type="button">카카오로 로그인</button>
+            <button class="google-button" id="login-google" type="button">구글로 로그인</button>
+            <p class="form-message" id="auth-message"></p>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <main class="app-shell is-hidden" id="app-shell">
+
+      <header class="topbar">
+        <a class="brand-mark" href="#" id="brand-home" aria-label="주간 화면으로">
+          <svg class="brand-icon" viewBox="0 0 96 96" aria-hidden="true"><use href="#logo-d"/></svg>
+          <svg class="brand-wordmark" viewBox="0 0 1015 186" aria-hidden="true"><use href="#logo-wordmark"/></svg>
+        </a>
+        <div class="top-actions">
+          <span class="user-pill" id="user-pill"></span>
+          <button class="text-button share-button" id="share-app" type="button">🔗 공유</button>
+          <button class="text-button outlined" id="battle-mode" type="button">⚔ 배틀 모드</button>
+          <button class="text-button outlined" id="reset-profile" type="button">목표 재설정</button>
+          <button class="text-button" id="logout" type="button">로그아웃</button>
+        </div>
+      </header>
+
+      <div class="month-nav" id="month-nav">
+        <button class="nav-arrow" id="prev-month" type="button" aria-label="이전 달">‹</button>
+        <span class="month-period" id="month-label"></span>
+        <button class="nav-arrow" id="next-month" type="button" aria-label="다음 달">›</button>
+      </div>
+
+      <section class="view onboarding-view is-hidden" id="onboarding-view">
+        <header class="onboarding-intro">
+          <p class="section-label">Personal goal setup</p>
+          <h2>개인 목표 설정</h2>
+          <p class="onboarding-desc">입력한 정보를 AI가 종합해 칼로리·단탄지·영양소 균형을 개인화합니다. 한 번 설정하면 유지되고, 상단의 <strong>목표 재설정</strong>으로 언제든 다시 설정할 수 있어요.</p>
+        </header>
+
+        <form class="onboarding-form" id="onboarding-form" novalidate>
+
+          <section class="panel section-basic">
+            <div class="section-header">
+              <span class="section-dot" style="background:#1c2331"></span>
+              <p class="section-label">Basic</p>
+            </div>
+            <h3>기본 정보</h3>
+            <div class="onboard-grid">
+              <label>나이 (만)
+                <input id="onb-age" type="text" inputmode="numeric" placeholder="32" />
+              </label>
+              <label>키 (cm)
+                <input id="onb-height" type="text" inputmode="decimal" placeholder="170" />
+              </label>
+              <label>현재 체중 (kg)
+                <input id="onb-weight" type="text" inputmode="decimal" placeholder="68" />
+              </label>
+              <label>감량 목표 (kg)
+                <input id="onb-loss" type="text" inputmode="decimal" placeholder="5" />
+              </label>
+            </div>
+            <p class="section-hint">→ 나이·성별·체중·키로 기초대사량(BMR) 계산. 활동량을 곱해 일일 칼로리 목표를 산출합니다.</p>
+          </section>
+
+          <section class="panel section-gender">
+            <div class="section-header">
+              <span class="section-dot" style="background:#ec407a"></span>
+              <p class="section-label gender-label">Gender</p>
+            </div>
+            <h3>성별</h3>
+            <div class="toggle-pair" id="gender-pair">
+              <button type="button" class="toggle-option" data-value="male">남자</button>
+              <button type="button" class="toggle-option" data-value="female">여자</button>
+            </div>
+            <div class="cycle-box is-hidden" id="cycle-box">
+              <p class="cycle-arrow">여자 선택 시 ↓</p>
+              <label>생리주기 패턴
+                <select id="onb-cycle">
+                  <option value="">선택</option>
+                  <option value="regular">규칙적 (28일 주기)</option>
+                  <option value="slightly_irregular">약간 불규칙 (25–32일)</option>
+                  <option value="irregular">불규칙</option>
+                  <option value="none">폐경/없음</option>
+                </select>
+              </label>
+              <label>마지막 생리 시작일 (선택)
+                <input id="onb-last-period" type="text" placeholder="2026-05-01 또는 모름" />
+              </label>
+              <p class="section-hint pink">→ AI가 황체기/난포기에 따라 영양 균형과 감량 페이스를 조정합니다.</p>
+            </div>
+          </section>
+
+          <section class="panel section-activity">
+            <div class="section-header">
+              <span class="section-dot" style="background:#159c6b"></span>
+              <p class="section-label activity-label">Activity</p>
+            </div>
+            <h3>평소 활동량</h3>
+            <div class="activity-pair" id="activity-pair">
+              <button type="button" class="activity-option" data-value="1">1</button>
+              <button type="button" class="activity-option" data-value="2">2</button>
+              <button type="button" class="activity-option" data-value="3">3</button>
+              <button type="button" class="activity-option" data-value="4">4</button>
+              <button type="button" class="activity-option" data-value="5">5</button>
+            </div>
+            <div class="activity-labels">
+              <span>아주<br/>적음</span><span>적음</span><span>보통</span><span>많음</span><span>아주<br/>많음</span>
+            </div>
+            <p class="section-hint">사무직·자주 앉아 있음 → 1–2 / 자주 걷고 가벼운 활동 → 3 / 운동 주 3–4회 → 4 / 매일 강도 높은 운동 → 5</p>
+          </section>
+
+          <section class="panel section-health">
+            <div class="section-header">
+              <span class="section-dot" style="background:#e0a21a"></span>
+              <p class="section-label health-label">Health</p>
+            </div>
+            <h3>병력 (선택)</h3>
+            <p class="section-hint amber">해당 항목 체크하고 수치를 알면 입력. <strong>"모름"</strong>으로 두면 평균값으로 분석돼요.</p>
+            <div class="conditions-list" id="conditions-list"></div>
+          </section>
+
+          <button class="primary-button submit-onboarding" type="submit">AI 목표 추천 받기 →</button>
+        </form>
+      </section>
+
+      <section class="view weekly-view is-hidden" id="weekly-view">
+
+        <section class="panel calendar-panel">
+          <div class="section-header">
+            <span class="section-dot" style="background:#6366f1"></span>
+            <p class="section-label calendar-label">Calendar</p>
+          </div>
+          <div class="weekday-grid" aria-hidden="true">
+            <span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span><span class="sun">일</span>
+          </div>
+          <div class="month-grid" id="calendar-grid"></div>
+          <div class="cal-legend">
+            <span><span class="leg-dot met"></span>달성</span>
+            <span><span class="leg-dot miss"></span>미달성</span>
+            <span><span class="leg-dot today"></span>오늘</span>
+          </div>
+        </section>
+
+        <section class="panel applied-goal-panel">
+          <div class="section-header">
+            <span class="section-dot" style="background:#d94040"></span>
+            <p class="section-label applied-label">Applied goal</p>
+          </div>
+          <h2>현재 적용 중인 목표</h2>
+          <div id="applied-goal-body"></div>
+        </section>
+
+        <aside class="panel coach-panel">
+          <div class="section-header">
+            <span class="section-dot" style="background:#0891b2"></span>
+            <p class="section-label coach-label">AI Coach</p>
+          </div>
+          <div class="panel-header-row">
+            <h2>이번 주 평가</h2>
+            <button class="text-button" id="reset-week" type="button">이번 주 초기화</button>
+          </div>
+          <div class="weekly-table" id="weekly-table"></div>
+          <div class="coach-message" id="coach-message"></div>
+        </aside>
+      </section>
+
+      <section class="view daily-view is-hidden" id="daily-view">
+
+        <button class="back-button" id="back-to-week" type="button">‹ 주간으로</button>
+
+        <div class="mini-week" id="mini-week-strip"></div>
+
+        <p class="day-title" id="selected-date"></p>
+
+        <section class="net-calories-card" id="net-calories-card">
+          <div class="net-cal-header">
+            <i class="ti ti-flame" aria-hidden="true"></i>
+            <span>Net calories</span>
+          </div>
+          <div class="net-cal-main">
+            <strong id="net-cal-value">0</strong>
+            <span class="net-cal-unit">kcal</span>
+            <span class="net-cal-badge" id="net-cal-badge"></span>
+          </div>
+          <div class="net-cal-breakdown">
+            <div class="nc-block">
+              <i class="ti ti-bowl-spoon nc-icon-intake" aria-hidden="true"></i>
+              <strong id="net-cal-intake">0</strong>
+              <span>섭취</span>
+            </div>
+            <span class="nc-op">−</span>
+            <div class="nc-block">
+              <i class="ti ti-activity nc-icon-burn" aria-hidden="true"></i>
+              <strong id="net-cal-burn">0</strong>
+              <span>운동</span>
+            </div>
+            <span class="nc-op">=</span>
+            <div class="nc-block nc-result">
+              <i class="ti ti-flame" aria-hidden="true"></i>
+              <strong id="net-cal-result">0</strong>
+              <span>순</span>
+            </div>
+          </div>
+        </section>
+
+        <div class="score-row">
+          <article class="score-card score-cal">
+            <div class="score-card-top">
+              <div class="score-card-label"><i class="ti ti-bowl-spoon" aria-hidden="true"></i><span>칼로리</span></div>
+            </div>
+            <strong id="calorie-total">0 kcal</strong>
+            <small id="calorie-status">목표 추천을 적용해 주세요</small>
+          </article>
+
+          <article class="score-card score-water">
+            <div class="score-card-top">
+              <div class="score-card-label"><i class="ti ti-droplet" aria-hidden="true"></i><span>물</span></div>
+              <div class="compact-actions">
+                <button class="icon-button" id="water-minus" type="button" aria-label="물 100ml 줄이기">−</button>
+                <button class="icon-button primary water-plus-btn" id="water-plus" type="button" aria-label="물 100ml 추가">+</button>
+              </div>
+            </div>
+            <strong id="water-total">0 L</strong>
+            <small id="water-status">목표 음수량 대기 중</small>
+          </article>
+        </div>
+
+        <section class="meal-entry-panel" id="meal-entry-panel">
+          <div class="meal-entry-header">
+            <p class="section-label">AI meal check</p>
+            <h3>먹은 음식 입력</h3>
+          </div>
+          <form class="meal-entry-form" id="meal-entry-form">
+            <textarea id="meal-entry-input" rows="2" placeholder="예: 닭가슴살 150g, 밥 반 공기, 김치찌개 1그릇"></textarea>
+            <div class="meal-quick-buttons">
+              <button class="meal-quick-btn" id="recent-meals-open" type="button">
+                <i class="ti ti-history" aria-hidden="true"></i>
+                <span>최근 음식</span>
+              </button>
+              <button class="meal-quick-btn" id="frequent-meals-open" type="button">
+                <i class="ti ti-star" aria-hidden="true"></i>
+                <span>자주 먹는 음식</span>
+              </button>
+              <button class="meal-quick-btn" id="ocr-open" type="button">
+                <i class="ti ti-camera" aria-hidden="true"></i>
+                <span>사진 분석</span>
+              </button>
+              <button class="meal-quick-btn meal-quick-btn--ai" id="meal-analyze-btn" type="submit">
+                <i class="ti ti-sparkles" aria-hidden="true"></i>
+                <span>AI 분석</span>
+              </button>
+            </div>
+            <input type="file" id="ocr-camera-input" accept="image/*" capture="environment" style="display:none" />
+          </form>
+          <div class="meal-entry-log" id="meal-entry-log"></div>
+        </section>
+
+        <section class="panel meals-panel">
+          <div class="section-header">
+            <span class="section-dot" style="background:#444441"></span>
+            <p class="section-label meals-label">Meals</p>
+          </div>
+          <div class="panel-header-row">
+            <h2>식단 기록</h2>
+            <span class="muted-pill" id="meal-count">0개</span>
+          </div>
+          <div class="meal-list" id="meal-list"></div>
+        </section>
+
+        <section class="panel exercise-panel">
+          <div class="exercise-header">
+            <div class="exercise-label"><i class="ti ti-stretching" aria-hidden="true"></i><span>Exercise</span></div>
+            <div class="exercise-totals">
+              <strong id="exercise-day-total">0분</strong>
+              <span id="exercise-detail">−0 kcal</span>
+            </div>
+          </div>
+          <div class="exercise-grid" id="exercise-steppers"></div>
+          <p class="section-hint">→ 각 활동의 분당 칼로리 소비는 AI가 사용자 체중·강도로 계산</p>
+        </section>
+
+        <section class="panel save-record-panel">
+          <button class="save-record-button" id="save-record-button" type="button">
+            <i class="ti ti-device-floppy" aria-hidden="true"></i>
+            <span class="save-record-label">기록 저장</span>
+          </button>
+          <p class="save-record-hint" id="save-record-hint">오늘 기록을 안전하게 저장합니다.</p>
+        </section>
+
+        <div class="analysis-section-header">
+          <div>
+            <p class="section-label analysis-label">Analysis report</p>
+            <h2><i class="ti ti-chart-histogram inline-icon" aria-hidden="true"></i> 오늘의 분석</h2>
+          </div>
+          <span class="muted-pill ai-pill">AI</span>
+        </div>
+
+        <section class="panel macros-panel">
+          <div class="section-header">
+            <span class="section-dot" style="background:#7f77dd"></span>
+            <p class="section-label macros-label">Macros</p>
+          </div>
+          <h2>단탄지 비율</h2>
+          <div id="macros-body"></div>
+        </section>
+
+        <section class="panel nutrients-panel">
+          <div class="section-header">
+            <span class="section-dot" style="background:#d4537e"></span>
+            <p class="section-label nutrients-label">Health markers</p>
+          </div>
+          <h2>건강 관리 지표</h2>
+          <p class="nutrients-sub" id="nutrients-sub">권장 한도 기준</p>
+          <div class="nutrients-grid" id="nutrients-grid"></div>
+        </section>
+
+        <section class="panel byfood-panel">
+          <div class="section-header">
+            <span class="section-dot" style="background:#444441"></span>
+            <p class="section-label byfood-label">By food</p>
+          </div>
+          <h2>음식별 영양 기여도</h2>
+          <div id="byfood-list"></div>
+        </section>
+
+        <div class="disease-container is-hidden" id="disease-container"></div>
+
+      </section>
+    </main>
+
+    <!-- My Foods 팝업 모달 -->
+    <div class="modal-overlay is-hidden" id="my-foods-modal">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="my-foods-title">
+        <div class="modal-header">
+          <h2 id="my-foods-title">내 음식</h2>
+          <button class="modal-close" id="my-foods-close" type="button" aria-label="닫기">×</button>
+        </div>
+        <p class="modal-hint">탭하면 식단 입력창에 추가됩니다. 최대 30개까지 저장 가능.</p>
+        <div class="my-foods-list" id="my-foods-list">
+          <p class="my-foods-empty">저장한 음식이 없습니다.<br>식단 기록 옆 <i class="ti ti-bookmark-filled"></i> 별 버튼을 눌러 추가하세요.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI 분석 결과 모달 (텍스트·사진 공용) -->
+    <div class="modal-overlay is-hidden" id="ocr-modal">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="ocr-title">
+        <div class="modal-header">
+          <h2 id="ocr-title">AI 분석 결과</h2>
+          <button class="modal-close" id="ocr-close" type="button" aria-label="닫기">×</button>
+        </div>
+        <p class="modal-hint" id="ocr-hint">값을 확인 후 식단에 추가하거나 내 음식으로 저장하세요.</p>
+        <div class="ocr-form" id="ocr-form">
+          <label class="ocr-field">
+            <span>제품명/음식</span>
+            <input type="text" id="ocr-name" />
+          </label>
+          <div class="ocr-field-row">
+            <label class="ocr-field">
+              <span>1회분량</span>
+              <div class="ocr-with-unit">
+                <input type="number" id="ocr-serving" min="0" step="1" />
+                <span class="ocr-unit">g/ml</span>
+              </div>
+            </label>
+            <label class="ocr-field">
+              <span>칼로리</span>
+              <div class="ocr-with-unit">
+                <input type="number" id="ocr-kcal" min="0" step="1" />
+                <span class="ocr-unit">kcal</span>
+              </div>
+            </label>
+          </div>
+          <div class="ocr-field-row">
+            <label class="ocr-field">
+              <span>단백질</span>
+              <div class="ocr-with-unit"><input type="number" id="ocr-protein" min="0" step="0.1" /><span class="ocr-unit">g</span></div>
+            </label>
+            <label class="ocr-field">
+              <span>탄수화물</span>
+              <div class="ocr-with-unit"><input type="number" id="ocr-carbs" min="0" step="0.1" /><span class="ocr-unit">g</span></div>
+            </label>
+            <label class="ocr-field">
+              <span>지방</span>
+              <div class="ocr-with-unit"><input type="number" id="ocr-fat" min="0" step="0.1" /><span class="ocr-unit">g</span></div>
+            </label>
+          </div>
+          <div class="ocr-field-row">
+            <label class="ocr-field">
+              <span>당류</span>
+              <div class="ocr-with-unit"><input type="number" id="ocr-sugar" min="0" step="0.1" /><span class="ocr-unit">g</span></div>
+            </label>
+            <label class="ocr-field">
+              <span>나트륨</span>
+              <div class="ocr-with-unit"><input type="number" id="ocr-sodium" min="0" step="1" /><span class="ocr-unit">mg</span></div>
+            </label>
+          </div>
+          <div class="ocr-field-row">
+            <label class="ocr-field">
+              <span>콜레스테롤</span>
+              <div class="ocr-with-unit"><input type="number" id="ocr-chol" min="0" step="1" /><span class="ocr-unit">mg</span></div>
+            </label>
+            <label class="ocr-field">
+              <span>포화지방</span>
+              <div class="ocr-with-unit"><input type="number" id="ocr-satfat" min="0" step="0.1" /><span class="ocr-unit">g</span></div>
+            </label>
+          </div>
+        </div>
+        <div class="ocr-actions">
+          <button class="ocr-cancel" id="ocr-cancel" type="button">취소</button>
+          <button class="ocr-add-meal" id="ocr-add-meal" type="button">저장</button>
+          <button class="ocr-save-favorite" id="ocr-save-favorite" type="button">내음식 추가</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 최근에 먹은 음식 모달 -->
+    <div class="modal-overlay is-hidden" id="recent-meals-modal">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="recent-title">
+        <div class="modal-header">
+          <h2 id="recent-title">최근에 먹은 음식</h2>
+          <button class="modal-close" id="recent-meals-close" type="button" aria-label="닫기">×</button>
+        </div>
+        <p class="modal-hint">최근 기록된 음식 30개 · 누르면 즉시 추가됩니다</p>
+        <div class="quick-foods-list" id="recent-meals-list">
+          <p class="my-foods-empty">아직 기록된 음식이 없습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 자주 먹는 음식 모달 -->
+    <div class="modal-overlay is-hidden" id="frequent-meals-modal">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="frequent-title">
+        <div class="modal-header">
+          <h2 id="frequent-title">자주 먹는 음식</h2>
+          <button class="modal-close" id="frequent-meals-close" type="button" aria-label="닫기">×</button>
+        </div>
+        <p class="modal-hint">사용 빈도 TOP 20 · 많이 먹을수록 위로 올라갑니다</p>
+        <div class="quick-foods-list" id="frequent-meals-list">
+          <p class="my-foods-empty">아직 기록된 음식이 없습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 배틀 모드 모달 -->
+    <div class="modal-overlay is-hidden" id="battle-modal">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="battle-title">
+        <div class="modal-header">
+          <h2 id="battle-title">⚔ 배틀 모드</h2>
+          <button class="modal-close" id="battle-close" type="button" aria-label="닫기">×</button>
+        </div>
+        <p class="modal-hint">친구와 함께 칼로리 목표 달성 연속일수로 경쟁하세요. 누가 더 오래 성공할까?</p>
+
+        <div class="battle-section">
+          <h3 class="battle-section-title">🏆 랭킹</h3>
+          <div class="battle-ranking" id="battle-ranking">
+            <p class="battle-empty">친구를 추가해서 랭킹을 시작하세요.</p>
+          </div>
+        </div>
+
+        <div class="battle-section">
+          <h3 class="battle-section-title">친구 검색·추가</h3>
+          <div class="battle-search-wrap">
+            <input type="text" id="battle-search" placeholder="이메일 또는 닉네임 입력" autocomplete="off" />
+          </div>
+          <div class="battle-search-results" id="battle-search-results"></div>
+          <p class="battle-add-hint" id="battle-add-hint"></p>
+        </div>
+
+        <div class="battle-section">
+          <h3 class="battle-section-title">내 친구 (탭하면 삭제)</h3>
+          <div class="battle-friends" id="battle-friends">
+            <p class="battle-empty">아직 추가한 친구가 없습니다.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

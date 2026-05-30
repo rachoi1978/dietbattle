@@ -127,10 +127,14 @@ const els = {
   battleModal: document.querySelector("#battle-modal"),
   battleClose: document.querySelector("#battle-close"),
   battleRanking: document.querySelector("#battle-ranking"),
+  battleInviteBtn: document.querySelector("#battle-invite-btn"),
   battleSearch: document.querySelector("#battle-search"),
   battleSearchResults: document.querySelector("#battle-search-results"),
   battleAddHint: document.querySelector("#battle-add-hint"),
   battleFriends: document.querySelector("#battle-friends"),
+  battleCommentInput: document.querySelector("#battle-comment-input"),
+  battleCommentSend: document.querySelector("#battle-comment-send"),
+  battleComments: document.querySelector("#battle-comments"),
 };
 
 const exerciseTypes = {
@@ -162,6 +166,14 @@ const CONDITION_LABELS = {
 
 
 async function initAuth() {
+  // ⭐ OAuth 리디렉션으로 URL이 정리되기 전에 invite 파라미터 먼저 저장
+  try {
+    const inviteParam = new URLSearchParams(window.location.search).get("invite");
+    if (inviteParam) {
+      localStorage.setItem("pending-invite", inviteParam);
+    }
+  } catch {}
+
   try {
     authConfig = await loadAuthConfig();
   } catch {
@@ -311,8 +323,43 @@ async function enterDashboard(user) {
   showApp();
   if (location.pathname !== "/dashboard") history.replaceState(null, "", "/dashboard");
   render();
-  // 배틀 모드용: 본인 streak 백그라운드 업로드 (친구가 검색 가능하도록)
-  setTimeout(() => uploadMyStreak().catch(() => {}), 1000);
+  // 배틀 모드용: 본인 streak 백그라운드 업로드 + 대기 중인 초대 처리
+  setTimeout(async () => {
+    await uploadMyStreak().catch(() => {});
+    await processPendingInvite().catch(() => {});
+  }, 800);
+}
+
+// 초대 링크로 들어온 경우 양방향 친구 자동 등록
+async function processPendingInvite() {
+  const inviterId = localStorage.getItem("pending-invite");
+  if (!inviterId || !supabase || !authUser) return;
+  // 처리 시도 — 성공/실패 무관하게 일단 제거 (무한 재시도 방지)
+  localStorage.removeItem("pending-invite");
+
+  if (inviterId === authUser.id) return; // 자기 자신
+
+  try {
+    const { data, error } = await supabase.rpc("create_mutual_friendship", { inviter_id: inviterId });
+    if (error) throw error;
+    if (data === "ok") {
+      // 초대자 이름 조회해서 환영 메시지
+      let friendName = "친구";
+      try {
+        const { data: rows } = await supabase
+          .from("user_streaks")
+          .select("display_name")
+          .eq("user_id", inviterId)
+          .limit(1);
+        if (rows && rows[0]?.display_name) friendName = rows[0].display_name;
+      } catch {}
+      showToast(`${friendName}님과 배틀이 시작됐어요! ⚔`, 3500);
+      // 배틀 모달 자동으로 열어서 확인시켜주기
+      setTimeout(() => { if (typeof openBattleModal === "function") openBattleModal(); }, 1200);
+    }
+  } catch (err) {
+    console.warn("초대 처리 실패:", err);
+  }
 }
 
 function showAuth(message = "") {
@@ -1740,7 +1787,9 @@ async function submitMeal(event) {
   // OCR 결과 모달 재사용 — 로딩 상태로 열기
   els.ocrModal.classList.remove("is-hidden");
   els.ocrForm.classList.add("is-hidden");
-  if (els.ocrHint) els.ocrHint.textContent = "Gemini가 영양정보를 분석 중입니다...";
+  const ocrTitleEl = document.querySelector("#ocr-title");
+  if (ocrTitleEl) ocrTitleEl.textContent = "AI 분석 결과";
+  if (els.ocrHint) els.ocrHint.textContent = "AI가 영양정보를 분석 중입니다...";
 
   // 기존 로딩/오류 정리
   const oldEl = els.ocrModal.querySelector(".ocr-loading, .ocr-error");
@@ -2130,7 +2179,9 @@ async function runOcrOnImage(file) {
   // 모달 열고 로딩 상태
   els.ocrModal.classList.remove("is-hidden");
   els.ocrForm.classList.add("is-hidden");
-  els.ocrHint.textContent = "AI가 영양표를 분석 중입니다...";
+  const ocrTitle = document.querySelector("#ocr-title");
+  if (ocrTitle) ocrTitle.textContent = "영양정보 스캔 결과";
+  els.ocrHint.textContent = "영양표를 읽는 중입니다...";
 
   // 기존 에러/로딩 정리
   const oldLoading = els.ocrModal.querySelector(".ocr-loading, .ocr-error");
@@ -2138,7 +2189,7 @@ async function runOcrOnImage(file) {
 
   const loading = document.createElement("div");
   loading.className = "ocr-loading";
-  loading.textContent = "사진 분석 중...";
+  loading.textContent = "영양표 스캔 중...";
   els.ocrForm.parentElement.insertBefore(loading, els.ocrForm);
 
   // 이미지 압축 (4MB 이상이면 리사이즈)
@@ -2380,12 +2431,14 @@ async function uploadMyStreak() {
     const today = new Date().toISOString().slice(0, 10);
     const email = authUser.email || "";
     const displayName = state.profile?.name || authUser.user_metadata?.name || email.split("@")[0] || "유저";
+    const avatarUrl = authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture || null;
 
     await supabase.from("user_streaks").upsert(
       {
         user_id: authUser.id,
         email,
         display_name: displayName,
+        avatar_url: avatarUrl,
         streak_days: streakDays,
         last_active_date: today,
         updated_at: new Date().toISOString(),
@@ -2483,24 +2536,79 @@ async function removeFriend(friendId, displayName) {
   }
 }
 
+// 아바타 HTML — 사진 있으면 이미지, 없으면 이니셜 + 색 배경
+function avatarHtml(name, avatarUrl, size = 56) {
+  const initial = (name || "?").trim().charAt(0).toUpperCase();
+  // 이름 해시로 일관된 색상
+  let hash = 0;
+  for (let i = 0; i < (name || "").length; i++) hash = (name.charCodeAt(i) + ((hash << 5) - hash)) | 0;
+  const hue = Math.abs(hash) % 360;
+  const bg = `hsl(${hue}, 55%, 60%)`;
+  if (avatarUrl) {
+    return `<div class="bvs-avatar" style="width:${size}px;height:${size}px;">
+      <img src="${escapeAttr(avatarUrl)}" alt="${escapeAttr(name)}" onerror="this.style.display='none';this.parentElement.style.background='${bg}';this.parentElement.textContent='${initial}';" />
+    </div>`;
+  }
+  return `<div class="bvs-avatar bvs-avatar-initial" style="width:${size}px;height:${size}px;background:${bg};">${initial}</div>`;
+}
+
+// 메달 표시 — 성공일수만큼 🏅, 최대 12개 + 나머지 카운트
+function medalsHtml(days) {
+  if (days <= 0) return `<span class="bvs-medals-empty">기록 시작 전</span>`;
+  const show = Math.min(days, 12);
+  let html = "🏅".repeat(show);
+  if (days > 12) html += `<span class="bvs-medal-more">+${days - 12}</span>`;
+  return `<span class="bvs-medals">${html}</span>`;
+}
+
+// VS 카드 렌더 — 나 VS 각 친구
 function renderRanking(ranking) {
   if (!ranking || ranking.length === 0) {
-    els.battleRanking.innerHTML = `<p class="battle-empty">친구를 추가해서 랭킹을 시작하세요.</p>`;
+    els.battleRanking.innerHTML = `<p class="battle-empty">친구를 초대해서 배틀을 시작하세요.</p>`;
     return;
   }
-  const medals = ["🥇", "🥈", "🥉"];
-  els.battleRanking.innerHTML = ranking
-    .map((r, idx) => {
-      const isMe = r.user_id === authUser.id;
-      const medal = idx < 3 ? medals[idx] : `${idx + 1}.`;
-      const name = escapeHtml(r.display_name || r.email?.split("@")[0] || "유저");
-      const days = r.streak_days || 0;
-      const status = days === 0 ? "기록 시작" : `${days}일째 성공!!!`;
+
+  const me = ranking.find((r) => r.user_id === authUser.id) || {
+    user_id: authUser.id,
+    display_name: state.profile?.name || "나",
+    streak_days: 0,
+    avatar_url: authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture || null,
+  };
+  const friends = ranking.filter((r) => r.user_id !== authUser.id);
+
+  if (friends.length === 0) {
+    els.battleRanking.innerHTML = `<p class="battle-empty">친구를 초대해서 배틀을 시작하세요.</p>`;
+    return;
+  }
+
+  const myName = me.display_name || "나";
+  const myDays = me.streak_days || 0;
+
+  els.battleRanking.innerHTML = friends
+    .map((fr) => {
+      const frName = fr.display_name || fr.email?.split("@")[0] || "친구";
+      const frDays = fr.streak_days || 0;
+      const meWins = myDays > frDays;
+      const frWins = frDays > myDays;
+      const tie = myDays === frDays && myDays > 0;
+
       return `
-        <div class="battle-rank-item ${isMe ? "is-me" : ""}">
-          <span class="battle-rank-medal">${medal}</span>
-          <span class="battle-rank-name">${name}${isMe ? " (나)" : ""}</span>
-          <span class="battle-rank-streak">${status}</span>
+        <div class="bvs-card">
+          <div class="bvs-side ${meWins ? "is-winning" : ""}">
+            <div class="bvs-trophy">${meWins || tie ? "🏆" : ""}</div>
+            ${avatarHtml(myName, me.avatar_url)}
+            <div class="bvs-name">${escapeHtml(myName)} <span class="bvs-me-tag">나</span></div>
+            <div class="bvs-days">${myDays === 0 ? "시작 전" : `${myDays}일째!`}</div>
+            ${medalsHtml(myDays)}
+          </div>
+          <div class="bvs-divider">VS</div>
+          <div class="bvs-side ${frWins ? "is-winning" : ""}">
+            <div class="bvs-trophy">${frWins || tie ? "🏆" : ""}</div>
+            ${avatarHtml(frName, fr.avatar_url)}
+            <div class="bvs-name">${escapeHtml(frName)}</div>
+            <div class="bvs-days">${frDays === 0 ? "시작 전" : `${frDays}일째!`}</div>
+            ${medalsHtml(frDays)}
+          </div>
         </div>
       `;
     })
@@ -2594,27 +2702,121 @@ function renderSearchResults(results, query) {
     .join("");
 }
 
+// ─── 응원 코멘트 (공용 보드) ──────────────────────────
+async function loadComments() {
+  if (!supabase || !authUser) return [];
+  try {
+    const { data, error } = await supabase
+      .from("battle_comments")
+      .select("*")
+      .order("created_at", { ascending: true })
+      .limit(200);
+    if (error) throw error;
+    return data || [];
+  } catch (err) {
+    console.warn("코멘트 로드 실패:", err);
+    return [];
+  }
+}
+
+async function postComment(message) {
+  if (!supabase || !authUser) return false;
+  const text = (message || "").trim();
+  if (!text) return false;
+  const myName = state.profile?.name || authUser.user_metadata?.name || authUser.email?.split("@")[0] || "나";
+  const myAvatar = authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture || null;
+  try {
+    const { error } = await supabase.from("battle_comments").insert({
+      from_user_id: authUser.id,
+      from_name: myName,
+      from_avatar: myAvatar,
+      message: text,
+    });
+    if (error) throw error;
+    return true;
+  } catch (err) {
+    console.warn("코멘트 작성 실패:", err);
+    return false;
+  }
+}
+
+function renderComments(comments) {
+  if (!els.battleComments) return;
+  if (!comments || comments.length === 0) {
+    els.battleComments.innerHTML = `<p class="battle-empty">아직 응원 메시지가 없어요. 먼저 한마디 남겨보세요!</p>`;
+    return;
+  }
+  els.battleComments.innerHTML = comments
+    .map((c) => {
+      const mine = c.from_user_id === authUser.id;
+      const name = escapeHtml(c.from_name || "친구");
+      const msg = escapeHtml(c.message || "");
+      const time = c.created_at ? new Date(c.created_at).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
+      return `
+        <div class="bchat-row ${mine ? "is-mine" : ""}">
+          ${mine ? "" : avatarHtml(c.from_name, c.from_avatar, 32)}
+          <div class="bchat-bubble-wrap">
+            ${mine ? "" : `<div class="bchat-name">${name}</div>`}
+            <div class="bchat-bubble">${msg}</div>
+            <div class="bchat-time">${time}</div>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+  // 최신 메시지로 스크롤
+  els.battleComments.scrollTop = els.battleComments.scrollHeight;
+}
+
+async function refreshComments() {
+  const comments = await loadComments();
+  renderComments(comments);
+}
+
 async function openBattleModal() {
   els.battleModal.classList.remove("is-hidden");
-  els.battleAddHint.textContent = "불러오는 중...";
-  els.battleAddHint.className = "battle-add-hint";
   if (els.battleSearch) els.battleSearch.value = "";
   if (els.battleSearchResults) els.battleSearchResults.innerHTML = "";
+  if (els.battleComments) els.battleComments.innerHTML = `<p class="battle-empty">불러오는 중...</p>`;
 
   // 본인 streak 먼저 업데이트
   await uploadMyStreak();
 
-  const [ranking, friends] = await Promise.all([loadRanking(), loadFriends()]);
+  const [ranking, friends, comments] = await Promise.all([loadRanking(), loadFriends(), loadComments()]);
   renderRanking(ranking);
   renderFriendsList(friends);
-  els.battleAddHint.textContent = "";
+  renderComments(comments);
 }
 
 function closeBattleModal() {
   els.battleModal.classList.add("is-hidden");
   if (els.battleSearch) els.battleSearch.value = "";
   if (els.battleSearchResults) els.battleSearchResults.innerHTML = "";
-  els.battleAddHint.textContent = "";
+}
+
+// 코멘트 전송
+if (els.battleCommentSend) {
+  els.battleCommentSend.addEventListener("click", async () => {
+    const text = els.battleCommentInput.value;
+    if (!text.trim()) return;
+    els.battleCommentSend.disabled = true;
+    const ok = await postComment(text);
+    els.battleCommentSend.disabled = false;
+    if (ok) {
+      els.battleCommentInput.value = "";
+      await refreshComments();
+    } else {
+      showToast("전송 실패. 다시 시도해주세요.");
+    }
+  });
+}
+if (els.battleCommentInput) {
+  els.battleCommentInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      els.battleCommentSend?.click();
+    }
+  });
 }
 
 if (els.battleMode) {
@@ -2836,30 +3038,48 @@ if (els.frequentMealsList) {
   });
 }
 
+// 초대 링크 생성 (내 user_id 포함 → 받는 사람이 자동 친구 등록)
+function buildInviteUrl() {
+  const base = "https://strong-tulumba-c3bff6.netlify.app";
+  if (authUser?.id) return `${base}/?invite=${authUser.id}`;
+  return base;
+}
+
+// 공유 실행 (초대 링크 포함)
+async function shareInvite() {
+  // 공유 전에 본인 streak 업로드 (받는 사람이 내 이름 볼 수 있도록)
+  uploadMyStreak().catch(() => {});
+
+  const inviteUrl = buildInviteUrl();
+  const shareData = {
+    title: "Diet Battle 🏆",
+    text: "같이 다이어트 배틀 해요! 이 링크로 들어오면 자동으로 배틀 친구가 돼요. 칼로리 목표 달성 연속일수로 경쟁하는 무료 앱이에요.",
+    url: inviteUrl,
+  };
+  if (navigator.share) {
+    try {
+      await navigator.share(shareData);
+    } catch (err) {
+      if (err.name !== "AbortError") console.warn("공유 실패:", err);
+    }
+  } else {
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      showToast("초대 링크가 복사되었습니다 📋");
+    } catch {
+      showToast(`초대 링크: ${inviteUrl}`);
+    }
+  }
+}
+
 // 앱 공유 (Web Share API → 카카오톡 포함)
 if (els.shareApp) {
-  els.shareApp.addEventListener("click", async () => {
-    const shareData = {
-      title: "Diet Battle 🏆",
-      text: "같이 다이어트 배틀 해요! 칼로리 목표 달성 연속일수로 경쟁하는 무료 앱이에요.",
-      url: "https://strong-tulumba-c3bff6.netlify.app",
-    };
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-      } catch (err) {
-        if (err.name !== "AbortError") console.warn("공유 실패:", err);
-      }
-    } else {
-      // PC 폴백: 링크 복사
-      try {
-        await navigator.clipboard.writeText(shareData.url);
-        showToast("링크가 복사되었습니다 📋");
-      } catch {
-        showToast(`앱 주소: ${shareData.url}`);
-      }
-    }
-  });
+  els.shareApp.addEventListener("click", shareInvite);
+}
+
+// 배틀 모달 안의 "친구 초대" 버튼
+if (els.battleInviteBtn) {
+  els.battleInviteBtn.addEventListener("click", shareInvite);
 }
 
 initAuth();

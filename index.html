@@ -298,10 +298,11 @@
         <section class="meal-entry-panel" id="meal-entry-panel">
           <div class="meal-entry-header">
             <p class="section-label">식단 기록</p>
-            <h3>먹은 음식 자동 기록</h3>
+            <h3>오늘 먹은 음식 기록</h3>
+            <p class="meal-entry-guide">먹은 음식을 적고 <strong>AI 분석</strong>을 누르면 칼로리·영양소가 자동 계산돼요. 제품 <strong>영양정보표</strong>가 있으면 <strong>영양정보 스캔</strong>으로 더 정확하게 입력할 수 있어요.</p>
           </div>
           <form class="meal-entry-form" id="meal-entry-form">
-            <textarea id="meal-entry-input" rows="2" placeholder="예: 닭가슴살 150g, 밥 반 공기, 김치찌개 1그릇"></textarea>
+            <textarea id="meal-entry-input" rows="2" placeholder="먹은 음식을 입력하세요  예: 닭가슴살 150g, 밥 반 공기, 김치찌개 1그릇"></textarea>
             <div class="meal-quick-buttons">
               <button class="meal-quick-btn" id="recent-meals-open" type="button">
                 <i class="ti ti-history" aria-hidden="true"></i>
@@ -312,8 +313,8 @@
                 <span>자주 먹는 음식</span>
               </button>
               <button class="meal-quick-btn" id="ocr-open" type="button">
-                <i class="ti ti-camera" aria-hidden="true"></i>
-                <span>사진 분석</span>
+                <i class="ti ti-scan" aria-hidden="true"></i>
+                <span>영양정보 스캔</span>
               </button>
               <button class="meal-quick-btn meal-quick-btn--ai" id="meal-analyze-btn" type="submit">
                 <i class="ti ti-sparkles" aria-hidden="true"></i>
@@ -519,30 +520,45 @@
           <h2 id="battle-title">⚔ 배틀 모드</h2>
           <button class="modal-close" id="battle-close" type="button" aria-label="닫기">×</button>
         </div>
-        <p class="modal-hint">친구와 함께 칼로리 목표 달성 연속일수로 경쟁하세요. 누가 더 오래 성공할까?</p>
+        <p class="modal-hint">친구와 칼로리 목표 달성 연속일수로 대결하고, 서로 응원하세요!</p>
 
         <div class="battle-section">
-          <h3 class="battle-section-title">🏆 랭킹</h3>
+          <button class="battle-invite-btn" id="battle-invite-btn" type="button">
+            <i class="ti ti-user-plus" aria-hidden="true"></i>
+            친구 초대 링크 보내기
+          </button>
+          <p class="battle-invite-hint">링크를 받은 친구가 로그인하면 <strong>자동으로 배틀 친구</strong>가 됩니다. 아이디를 몰라도 돼요.</p>
+        </div>
+
+        <div class="battle-section">
+          <h3 class="battle-section-title">⚔ 대결</h3>
           <div class="battle-ranking" id="battle-ranking">
-            <p class="battle-empty">친구를 추가해서 랭킹을 시작하세요.</p>
+            <p class="battle-empty">친구를 초대해서 배틀을 시작하세요.</p>
           </div>
         </div>
 
         <div class="battle-section">
-          <h3 class="battle-section-title">친구 검색·추가</h3>
+          <h3 class="battle-section-title">💬 응원 한마디</h3>
+          <div class="battle-comment-form">
+            <input type="text" id="battle-comment-input" placeholder="화이팅! 오늘도 같이 힘내요 💪" maxlength="200" autocomplete="off" />
+            <button class="battle-comment-send" id="battle-comment-send" type="button">전송</button>
+          </div>
+          <div class="battle-comments" id="battle-comments">
+            <p class="battle-empty">아직 응원 메시지가 없어요.</p>
+          </div>
+        </div>
+
+        <details class="battle-section battle-search-details">
+          <summary class="battle-section-title">아이디로 직접 검색 / 친구 관리</summary>
           <div class="battle-search-wrap">
             <input type="text" id="battle-search" placeholder="이메일 또는 닉네임 입력" autocomplete="off" />
           </div>
           <div class="battle-search-results" id="battle-search-results"></div>
           <p class="battle-add-hint" id="battle-add-hint"></p>
-        </div>
-
-        <div class="battle-section">
-          <h3 class="battle-section-title">내 친구 (탭하면 삭제)</h3>
           <div class="battle-friends" id="battle-friends">
             <p class="battle-empty">아직 추가한 친구가 없습니다.</p>
           </div>
-        </div>
+        </details>
       </div>
     </div>
 

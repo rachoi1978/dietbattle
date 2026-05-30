@@ -1918,6 +1918,11 @@ h3 { margin-bottom: 0; font-size: 15px; font-weight: 600; }
 
 .battle-search-wrap {
   display: flex;
+  position: sticky;
+  top: 0;
+  background: var(--panel);
+  z-index: 2;
+  padding: 8px 0;
 }
 .battle-search-wrap input {
   width: 100%;
@@ -2032,6 +2037,11 @@ h3 { margin-bottom: 0; font-size: 15px; font-weight: 600; }
   display: flex;
   flex-direction: column;
   gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 10px;
+  padding-top: 4px;
+  border-top: 1px solid #eceadf;
 }
 .battle-friend-item {
   display: flex;

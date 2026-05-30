@@ -2752,13 +2752,22 @@ function renderComments(comments) {
       const name = escapeHtml(c.from_name || "친구");
       const msg = escapeHtml(c.message || "");
       const time = c.created_at ? new Date(c.created_at).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
+      const actions = mine
+        ? `<div class="bchat-actions">
+             <button class="bchat-edit" data-edit-id="${c.id}" data-msg="${escapeAttr(c.message || "")}">수정</button>
+             <button class="bchat-delete" data-delete-id="${c.id}">삭제</button>
+           </div>`
+        : "";
       return `
         <div class="bchat-row ${mine ? "is-mine" : ""}">
           ${mine ? "" : avatarHtml(c.from_name, c.from_avatar, 32)}
           <div class="bchat-bubble-wrap">
             ${mine ? "" : `<div class="bchat-name">${name}</div>`}
             <div class="bchat-bubble">${msg}</div>
-            <div class="bchat-time">${time}</div>
+            <div class="bchat-meta">
+              <span class="bchat-time">${time}</span>
+              ${actions}
+            </div>
           </div>
         </div>
       `;
@@ -2766,6 +2775,38 @@ function renderComments(comments) {
     .join("");
   // 최신 메시지로 스크롤
   els.battleComments.scrollTop = els.battleComments.scrollHeight;
+}
+
+// 코멘트 삭제
+async function deleteComment(id) {
+  if (!confirm("이 메시지를 삭제할까요?")) return;
+  try {
+    const { error } = await supabase.from("battle_comments").delete().eq("id", id);
+    if (error) throw error;
+    showToast("삭제됐어요");
+    await refreshComments();
+  } catch (err) {
+    console.warn("삭제 실패:", err);
+    showToast("삭제 실패");
+  }
+}
+
+// 코멘트 수정
+async function editComment(id, oldMsg) {
+  const newMsg = prompt("메시지 수정:", oldMsg);
+  if (newMsg === null) return; // 취소
+  const trimmed = newMsg.trim();
+  if (!trimmed) return;
+  if (trimmed === oldMsg) return; // 변경 없음
+  try {
+    const { error } = await supabase.from("battle_comments").update({ message: trimmed }).eq("id", id);
+    if (error) throw error;
+    showToast("수정됐어요");
+    await refreshComments();
+  } catch (err) {
+    console.warn("수정 실패:", err);
+    showToast("수정 실패");
+  }
 }
 
 async function refreshComments() {
@@ -2815,6 +2856,21 @@ if (els.battleCommentInput) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       els.battleCommentSend?.click();
+    }
+  });
+}
+
+// 코멘트 수정/삭제 버튼 (이벤트 위임)
+if (els.battleComments) {
+  els.battleComments.addEventListener("click", (e) => {
+    const delBtn = e.target.closest("[data-delete-id]");
+    if (delBtn) {
+      deleteComment(delBtn.getAttribute("data-delete-id"));
+      return;
+    }
+    const editBtn = e.target.closest("[data-edit-id]");
+    if (editBtn) {
+      editComment(editBtn.getAttribute("data-edit-id"), editBtn.getAttribute("data-msg") || "");
     }
   });
 }

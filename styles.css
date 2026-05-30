@@ -2723,3 +2723,45 @@ h3 { margin-bottom: 0; font-size: 15px; font-weight: 600; }
   margin-top: 3px;
   padding: 0 4px;
 }
+
+/* ── 배틀 모달 스크롤 수정 ──────────────────────────── */
+/* 카드 전체를 스크롤 가능하게, 헤더는 상단 고정 */
+#battle-modal .modal-card {
+  max-height: 88vh;
+  overflow-y: auto;
+}
+#battle-modal .modal-header {
+  position: sticky;
+  top: 0;
+  background: var(--panel);
+  z-index: 10;
+}
+
+/* ── 코멘트 수정/삭제 버튼 ──────────────────────────── */
+.bchat-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 3px;
+  padding: 0 4px;
+}
+.bchat-row.is-mine .bchat-meta {
+  flex-direction: row-reverse;
+}
+.bchat-actions {
+  display: flex;
+  gap: 6px;
+}
+.bchat-edit, .bchat-delete {
+  background: none;
+  border: none;
+  font-size: 11px;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+  text-decoration: underline;
+}
+.bchat-edit:active { color: var(--ink); }
+.bchat-delete:active { color: #c0392b; }

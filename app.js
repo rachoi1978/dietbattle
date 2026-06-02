@@ -1189,7 +1189,6 @@ function renderByfood(day) {
           <div class="byfood-top">
             <span class="byfood-name">${anyAlert ? "⚠ " : ""}${escapeHTML(meal.title)}</span>
             <span class="byfood-kcal">${ne("kcal", Math.round(meal.kcal), " kcal")}</span>
-            <button class="byfood-remove" type="button" data-remove-meal="${meal.id}" aria-label="이 음식 삭제" title="삭제">−</button>
           </div>
           <div class="byfood-chips">
             <span class="byfood-chip protein">P ${ne("protein", Math.round(meal.protein), "g")}</span>
@@ -1230,27 +1229,6 @@ function renderByfood(day) {
       }
     });
   });
-
-  // 삭제(−) 버튼 → 그날 식단에서 이 음식 제거
-  els.byfoodList.querySelectorAll(".byfood-remove").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const mealId = btn.getAttribute("data-remove-meal");
-      removeMealFromDay(mealId);
-    });
-  });
-}
-
-// 그날 식단에서 음식 1개 제거
-function removeMealFromDay(mealId) {
-  const day = getDay();
-  const meal = (day.meals || []).find((m) => m.id === mealId);
-  if (!meal) return;
-  if (!confirm(`'${meal.title}'을(를) 오늘 기록에서 뺄까요?`)) return;
-  day.meals = day.meals.filter((m) => m.id !== mealId);
-  saveState();
-  render();
-  showToast("기록에서 뺐어요");
 }
 
 // 인라인 편집 시작 — span을 input으로 교체
@@ -1459,8 +1437,7 @@ function renderMeals(day) {
         <div class="meal-row ${warn ? "warn" : ""}">
           <span class="meal-name">${warn ? "⚠ " : ""}${escapeHTML(meal.title)}</span>
           <span class="meal-kcal">${Math.round(meal.kcal)} kcal</span>
-          <button class="meal-star" type="button" data-save-favorite="${meal.id}" aria-label="내 음식으로 저장" title="내 음식으로 저장">★</button>
-          <button class="meal-remove" type="button" data-delete="${meal.id}" aria-label="식단 삭제">×</button>
+          <button class="meal-remove" type="button" data-delete="${meal.id}" aria-label="이 음식 빼기" title="빼기">−</button>
         </div>
       `;
     })
@@ -1468,24 +1445,14 @@ function renderMeals(day) {
 
   els.mealList.querySelectorAll("[data-delete]").forEach((button) => {
     button.addEventListener("click", () => {
-      day.meals = day.meals.filter((meal) => meal.id !== button.getAttribute("data-delete"));
-      render();
-    });
-  });
-
-  els.mealList.querySelectorAll("[data-save-favorite]").forEach((button) => {
-    button.addEventListener("click", async () => {
-      const id = button.getAttribute("data-save-favorite");
+      const id = button.getAttribute("data-delete");
       const meal = day.meals.find((m) => m.id === id);
       if (!meal) return;
-      button.disabled = true;
-      const ok = await saveMealToMyFoods(meal);
-      button.disabled = false;
-      if (ok) {
-        button.classList.add("is-saved");
-        button.textContent = "★";
-        button.title = "내 음식에 저장됨";
-      }
+      if (!confirm(`'${meal.title}'을(를) 오늘 기록에서 뺄까요?`)) return;
+      day.meals = day.meals.filter((m) => m.id !== id);
+      saveState();
+      render();
+      showToast("기록에서 뺐어요");
     });
   });
 }

@@ -1,7 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const STATE_PREFIX = "diet-battle-state-v10:";
-const today = new Date();
+let today = new Date(); // 자정 넘김/날짜 변경 시 갱신 가능하도록 let
 
 let supabase = null;
 let authUser = null;
@@ -445,11 +445,15 @@ function mergeSavedState(saved) {
   const profile = { ...baseProf, ...savedProf, conditions: mergedConditions };
   if (!profile.onboarded && profile.targets) profile.onboarded = true;
   const view = profile.onboarded ? saved.view || "weekly" : "onboarding";
+  // 앱을 새로 열 때는 항상 오늘 날짜로 시작 (지난 주/지난 날짜에 머무는 문제 방지)
+  const todayIso = toISO(new Date());
   return {
     ...base,
     ...saved,
     view,
     profile,
+    selectedDate: todayIso,
+    visibleMonth: todayIso.slice(0, 7),
     weeklyFeedback: saved.weeklyFeedback || {},
   };
 }
@@ -649,6 +653,7 @@ function getWeekDates(iso = state.selectedDate) {
 
 function render() {
   if (!authUser) return;
+  today = new Date(); // 렌더 시점의 실제 오늘로 갱신 (미래 판정 오류 방지)
   const view = state.profile.onboarded ? state.view : "onboarding";
   showView(view);
   if (view === "onboarding") {
@@ -3126,5 +3131,21 @@ if (els.shareApp) {
 if (els.battleInviteBtn) {
   els.battleInviteBtn.addEventListener("click", shareInvite);
 }
+
+// 앱이 백그라운드에서 다시 활성화될 때 날짜 변경 감지
+// (앱을 열어둔 채 자정/주가 바뀌면 자동으로 오늘로 이동)
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible") return;
+  if (!authUser || !state) return;
+  const prev = toISO(today);
+  today = new Date();
+  const now = toISO(today);
+  if (prev !== now) {
+    // 날짜가 바뀌었으면 오늘로 이동 + 이번 주 표시
+    state.selectedDate = now;
+    state.visibleMonth = now.slice(0, 7);
+    render();
+  }
+});
 
 initAuth();

@@ -30,15 +30,61 @@ JSON 형식으로만 응답:
 
 검증: 단백질 4kcal + 탄수 4kcal + 지방 9kcal ≈ 총 kcal 일치하도록.`;
 
+// ─── 인증: 로그인한 사용자만 호출 가능 ──────────────────
+// Supabase 토큰 검증. 설정은 환경변수 우선, 없으면 사이트의 공개 config 폴백.
+let _sbConfig = null;
+async function getSupabaseConfig() {
+  if (_sbConfig) return _sbConfig;
+  let url = process.env.SUPABASE_URL;
+  let anonKey = process.env.SUPABASE_ANON_KEY;
+  if (!url || !anonKey) {
+    try {
+      const siteUrl = process.env.URL || "https://strong-tulumba-c3bff6.netlify.app";
+      const res = await fetch(`${siteUrl}/supabase-config.json`);
+      if (res.ok) {
+        const cfg = await res.json();
+        url = url || cfg.url || cfg.supabaseUrl;
+        anonKey = anonKey || cfg.anonKey || cfg.supabaseAnonKey;
+      }
+    } catch {}
+  }
+  if (url && anonKey) _sbConfig = { url, anonKey };
+  return _sbConfig;
+}
+
+async function verifyUser(event) {
+  const authHeader = event.headers.authorization || event.headers.Authorization || "";
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+  if (!token) return null;
+  const cfg = await getSupabaseConfig();
+  if (!cfg) return null;
+  try {
+    const res = await fetch(`${cfg.url}/auth/v1/user`, {
+      headers: { Authorization: `Bearer ${token}`, apikey: cfg.anonKey },
+    });
+    if (!res.ok) return null;
+    const user = await res.json();
+    return user && user.id ? user : null;
+  } catch {
+    return null;
+  }
+}
+
 exports.handler = async (event) => {
   const cors = {
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
   };
 
   if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers: cors, body: "" };
   if (event.httpMethod !== "POST") return { statusCode: 405, headers: cors, body: JSON.stringify({ error: "POST only" }) };
+
+  // 로그인한 사용자만 AI 분석 사용 가능 (비용 도용 방지)
+  const user = await verifyUser(event);
+  if (!user) {
+    return { statusCode: 401, headers: cors, body: JSON.stringify({ error: "로그인이 필요합니다" }) };
+  }
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -51,6 +97,7 @@ exports.handler = async (event) => {
 
   const name = (body.name || "").trim();
   if (!name) return { statusCode: 400, headers: cors, body: JSON.stringify({ error: "name 필드 필요" }) };
+  if (name.length > 500) return { statusCode: 413, headers: cors, body: JSON.stringify({ error: "입력이 너무 깁니다 (500자 이내)" }) };
 
   try {
     const apiRes = await fetch(

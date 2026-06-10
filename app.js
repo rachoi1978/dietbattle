@@ -227,6 +227,17 @@ async function initAuth() {
   });
 }
 
+// AI 함수 호출용 인증 헤더 — 로그인 토큰을 함께 전송 (서버에서 검증)
+async function authHeaders() {
+  try {
+    const { data } = await supabase.auth.getSession();
+    const token = data?.session?.access_token;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  } catch {
+    return {};
+  }
+}
+
 async function loadAuthConfig() {
   let lastError = null;
 
@@ -1797,11 +1808,15 @@ async function submitMeal(event) {
   try {
     const res = await fetch("/.netlify/functions/analyze-food", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...(await authHeaders()) },
       body: JSON.stringify({ name: raw }),
     });
     loading.remove();
 
+    if (res.status === 401) {
+      showOcrError("로그인이 만료되었어요. 페이지를 새로고침한 뒤 다시 시도해주세요.");
+      return;
+    }
     if (!res.ok) {
       let detail = "";
       try {
@@ -2191,11 +2206,15 @@ async function runOcrOnImage(file) {
     const base64 = await imageFileToBase64(file, 1280);
     const res = await fetch("/.netlify/functions/ocr-nutrition", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...(await authHeaders()) },
       body: JSON.stringify({ image: base64 }),
     });
     loading.remove();
 
+    if (res.status === 401) {
+      showOcrError("로그인이 만료되었어요. 페이지를 새로고침한 뒤 다시 시도해주세요.");
+      return;
+    }
     if (!res.ok) {
       // 실제 응답 내용 시도해서 보여주기 (JSON 또는 텍스트)
       let detail = "";

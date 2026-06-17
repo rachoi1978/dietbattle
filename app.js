@@ -1818,17 +1818,18 @@ async function submitMeal(event) {
       return;
     }
     if (!res.ok) {
-      let detail = "";
+      let msg = "";
       try {
         const errData = await res.json();
-        detail = errData.error || JSON.stringify(errData);
-        if (errData.detail) detail += ` — ${errData.detail}`;
-        if (errData.finishReason) detail += ` [finish: ${errData.finishReason}]`;
-        if (errData.raw) detail += ` RAW: ${errData.raw.slice(0, 150)}`;
-      } catch {
-        try { detail = (await res.text()).slice(0, 300); } catch {}
+        // 함수가 사용자 친화 메시지를 주면 그대로 표시
+        msg = errData.error || "";
+      } catch {}
+      if (!msg) {
+        msg = res.status >= 500
+          ? "AI가 잠시 바빠요. 잠시 후 다시 시도해 주세요."
+          : "분석에 실패했어요. 잠시 후 다시 시도해 주세요.";
       }
-      showOcrError(`HTTP ${res.status} — ${detail || "응답 없음"}`);
+      showOcrError(msg);
       return;
     }
     const data = await res.json();
@@ -2216,18 +2217,17 @@ async function runOcrOnImage(file) {
       return;
     }
     if (!res.ok) {
-      // 실제 응답 내용 시도해서 보여주기 (JSON 또는 텍스트)
-      let detail = "";
+      let msg = "";
       try {
         const errData = await res.json();
-        detail = errData.error || JSON.stringify(errData);
-        if (errData.detail) detail += ` — ${errData.detail}`;
-        if (errData.finishReason) detail += ` [finish: ${errData.finishReason}]`;
-        if (errData.raw) detail += ` RAW: ${errData.raw.slice(0, 150)}`;
-      } catch {
-        try { detail = (await res.text()).slice(0, 300); } catch {}
+        msg = errData.error || "";
+      } catch {}
+      if (!msg) {
+        msg = res.status >= 500
+          ? "AI가 잠시 바빠요. 잠시 후 다시 시도해 주세요."
+          : "스캔에 실패했어요. 잠시 후 다시 시도해 주세요.";
       }
-      showOcrError(`HTTP ${res.status} — ${detail || "응답 없음"}`);
+      showOcrError(msg);
       return;
     }
     let data;

@@ -3,6 +3,37 @@
 // Body: { name: "닭가슴살 150g, 밥 반 공기, 김치 100g" }
 
 const MODEL = "gemini-2.5-flash-lite";
+// 과부하(503) 시 순서대로 폴백할 모델 체인
+const MODEL_CHAIN = ["gemini-2.5-flash-lite", "gemini-2.0-flash", "gemini-2.5-flash"];
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Gemini 호출 — 일시 오류(429/500/502/503)면 재시도 + 모델 폴백
+async function callGeminiWithFallback(apiKey, requestBody) {
+  let lastErr = { status: 0, text: "" };
+  for (const model of MODEL_CHAIN) {
+    // 모델당 최대 2회 시도 (1초 간격)
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+          { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(requestBody) }
+        );
+        if (res.ok) return { ok: true, res };
+        const errText = await res.text();
+        lastErr = { status: res.status, text: errText };
+        // 일시적 오류만 재시도/폴백 대상. 그 외(400 등)는 즉시 중단
+        const transient = [429, 500, 502, 503].includes(res.status);
+        if (!transient) return { ok: false, ...lastErr };
+        // 같은 모델 1회 재시도는 잠깐 대기 후, 두 번째 실패면 다음 모델로
+        if (attempt === 0) await sleep(1000);
+      } catch (e) {
+        lastErr = { status: 0, text: String(e.message || e) };
+        await sleep(800);
+      }
+    }
+  }
+  return { ok: false, ...lastErr };
+}
 
 const PROMPT = (name) => `다음 한국 음식(또는 식사 내역)의 영양정보를 분석하세요.
 
@@ -100,29 +131,29 @@ exports.handler = async (event) => {
   if (name.length > 500) return { statusCode: 413, headers: cors, body: JSON.stringify({ error: "입력이 너무 깁니다 (500자 이내)" }) };
 
   try {
-    const apiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: PROMPT(name) }] }],
-          generationConfig: {
-            maxOutputTokens: 1024,
-            responseMimeType: "application/json",
-            temperature: 0.2,
-          },
-        }),
-      }
-    );
+    const requestBody = {
+      contents: [{ parts: [{ text: PROMPT(name) }] }],
+      generationConfig: {
+        maxOutputTokens: 1024,
+        responseMimeType: "application/json",
+        temperature: 0.2,
+      },
+    };
+    const { ok, res: apiRes, status, text: errText } = await callGeminiWithFallback(apiKey, requestBody);
 
-    if (!apiRes.ok) {
-      const errText = await apiRes.text();
-      console.error("Gemini API 오류:", apiRes.status, errText);
+    if (!ok) {
+      console.error("Gemini API 오류(폴백 모두 실패):", status, errText);
+      // 과부하 계열이면 사용자 친화 메시지 + 503으로 반환
+      const overloaded = [429, 500, 502, 503].includes(status);
       return {
-        statusCode: 502,
+        statusCode: overloaded ? 503 : 502,
         headers: cors,
-        body: JSON.stringify({ error: `API 호출 실패 (${apiRes.status})`, detail: errText.slice(0, 200) }),
+        body: JSON.stringify({
+          error: overloaded
+            ? "AI가 잠시 바빠요. 30초 후 다시 시도해 주세요."
+            : `분석에 실패했어요 (${status}). 잠시 후 다시 시도해 주세요.`,
+          retryable: overloaded,
+        }),
       };
     }
 

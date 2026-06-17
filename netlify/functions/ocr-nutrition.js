@@ -2,6 +2,34 @@
 // POST /.netlify/functions/ocr-nutrition
 
 const MODEL = "gemini-2.5-flash-lite";
+// 과부하(503) 시 순서대로 폴백할 모델 체인
+const MODEL_CHAIN = ["gemini-2.5-flash-lite", "gemini-2.0-flash", "gemini-2.5-flash"];
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Gemini 호출 — 일시 오류(429/500/502/503)면 재시도 + 모델 폴백
+async function callGeminiWithFallback(apiKey, requestBody) {
+  let lastErr = { status: 0, text: "" };
+  for (const model of MODEL_CHAIN) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+          { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(requestBody) }
+        );
+        if (res.ok) return { ok: true, res };
+        const errText = await res.text();
+        lastErr = { status: res.status, text: errText };
+        const transient = [429, 500, 502, 503].includes(res.status);
+        if (!transient) return { ok: false, ...lastErr };
+        if (attempt === 0) await sleep(1000);
+      } catch (e) {
+        lastErr = { status: 0, text: String(e.message || e) };
+        await sleep(800);
+      }
+    }
+  }
+  return { ok: false, ...lastErr };
+}
 const PROMPT = `이 사진은 한국 식품의 영양정보표 또는 음식 사진입니다.
 다음 JSON 형식으로만 응답하세요. (키 순서는 한국 영양성분표 표기 순서와 동일합니다)
 
@@ -108,34 +136,33 @@ exports.handler = async (event) => {
   }
 
   try {
-    const apiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{
-            parts: [
-              { inline_data: { mime_type: mediaType, data: imageData } },
-              { text: PROMPT },
-            ],
-          }],
-          generationConfig: {
-            maxOutputTokens: 1024,
-            responseMimeType: "application/json",
-            temperature: 0.2,
-          },
-        }),
-      }
-    );
+    const requestBody = {
+      contents: [{
+        parts: [
+          { inline_data: { mime_type: mediaType, data: imageData } },
+          { text: PROMPT },
+        ],
+      }],
+      generationConfig: {
+        maxOutputTokens: 1024,
+        responseMimeType: "application/json",
+        temperature: 0.2,
+      },
+    };
+    const { ok, res: apiRes, status, text: errText } = await callGeminiWithFallback(apiKey, requestBody);
 
-    if (!apiRes.ok) {
-      const errText = await apiRes.text();
-      console.error("Gemini API 오류:", apiRes.status, errText);
+    if (!ok) {
+      console.error("Gemini API 오류(폴백 모두 실패):", status, errText);
+      const overloaded = [429, 500, 502, 503].includes(status);
       return {
-        statusCode: 502,
+        statusCode: overloaded ? 503 : 502,
         headers: cors,
-        body: JSON.stringify({ error: `API 호출 실패 (${apiRes.status})`, detail: errText.slice(0, 200) }),
+        body: JSON.stringify({
+          error: overloaded
+            ? "AI가 잠시 바빠요. 30초 후 다시 시도해 주세요."
+            : `스캔에 실패했어요 (${status}). 잠시 후 다시 시도해 주세요.`,
+          retryable: overloaded,
+        }),
       };
     }
 

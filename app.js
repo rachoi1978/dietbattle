@@ -422,7 +422,7 @@ function showAuth(message = "") {
 function showApp() {
   els.authScreen.classList.add("is-hidden");
   els.appShell.classList.remove("is-hidden");
-  els.userPill.textContent = `${displayName(authUser)} 님`;
+  els.userPill.textContent = `${displayName(authUser)} 님 ▾`;
 }
 
 function displayName(user) {
@@ -1952,8 +1952,31 @@ els.resetWeek.addEventListener("click", () => {
 
 els.loginKakao.addEventListener("click", () => signInWithProvider("kakao"));
 els.loginGoogle.addEventListener("click", () => signInWithProvider("google"));
-els.logout.addEventListener("click", signOut);
-document.querySelector("#delete-account")?.addEventListener("click", deleteMyAccount);
+// 유저 메뉴 (아이디 탭 → 로그아웃/계정삭제)
+const userMenu = document.querySelector("#user-menu");
+if (els.userPill && userMenu) {
+  els.userPill.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const hidden = userMenu.classList.toggle("is-hidden");
+    els.userPill.setAttribute("aria-expanded", hidden ? "false" : "true");
+  });
+  // 바깥 클릭하면 닫기
+  document.addEventListener("click", (e) => {
+    if (!userMenu.classList.contains("is-hidden") && !userMenu.contains(e.target)) {
+      userMenu.classList.add("is-hidden");
+      els.userPill.setAttribute("aria-expanded", "false");
+    }
+  });
+}
+
+els.logout.addEventListener("click", () => {
+  userMenu?.classList.add("is-hidden");
+  signOut();
+});
+document.querySelector("#delete-account")?.addEventListener("click", () => {
+  userMenu?.classList.add("is-hidden");
+  deleteMyAccount();
+});
 
 // 기록 저장 — debounce 우회하고 즉시 Supabase에 강제 동기화
 async function saveRecordNow() {

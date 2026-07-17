@@ -16,7 +16,7 @@
     <link rel="preconnect" href="https://rsms.me/" />
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/[email protected]/iconfont/tabler-icons.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=14" />
+    <link rel="stylesheet" href="/styles.css?v=15" />
   </head>
   <body>
 
@@ -30,7 +30,7 @@
     <main class="auth-screen" id="auth-screen">
       <section class="auth-panel">
         <div class="auth-brand">
-          <img class="auth-wordmark" src="/logo-full.png?v=14" alt="다이어트배틀" />
+          <img class="auth-wordmark" src="/logo-full.png?v=15" alt="다이어트배틀" />
           <p class="eyebrow">AI diet calendar</p>
         </div>
         <div class="auth-grid social-only">
@@ -51,16 +51,20 @@
 
       <header class="topbar">
         <a class="brand-mark" href="#" id="brand-home" aria-label="주간 화면으로">
-          <img class="brand-wordmark" src="/logo-full.png?v=14" alt="다이어트배틀" />
+          <img class="brand-wordmark" src="/logo-full.png?v=15" alt="다이어트배틀" />
         </a>
         <div class="topbar-row">
-          <span class="user-pill" id="user-pill"></span>
+          <div class="user-menu-wrap">
+            <button class="user-pill" id="user-pill" type="button" aria-haspopup="true" aria-expanded="false"></button>
+            <div class="user-menu is-hidden" id="user-menu">
+              <button class="user-menu-item" id="logout" type="button">로그아웃</button>
+              <button class="user-menu-item danger" id="delete-account" type="button">계정 삭제</button>
+            </div>
+          </div>
           <div class="top-actions">
             <button class="text-button share-button" id="share-app" type="button">🔗 공유</button>
             <button class="text-button outlined" id="battle-mode" type="button">⚔ 배틀 모드</button>
             <button class="text-button outlined" id="reset-profile" type="button">목표 재설정</button>
-            <button class="text-button" id="logout" type="button">로그아웃</button>
-            <button class="text-button danger-link" id="delete-account" type="button">계정 삭제</button>
           </div>
         </div>
       </header>
@@ -585,6 +589,6 @@
       </div>
     </div>
 
-    <script type="module" src="/app.js?v=14"></script>
+    <script type="module" src="/app.js?v=15"></script>
   </body>
 </html>

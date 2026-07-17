@@ -328,6 +328,45 @@ async function signOut() {
   showAuth();
 }
 
+// 계정 삭제 — 모든 데이터 + 계정 영구 삭제 (앱스토어 필수)
+async function deleteMyAccount() {
+  const ok1 = confirm(
+    "정말 계정을 삭제할까요?\n\n" +
+    "• 모든 식단·운동 기록\n" +
+    "• 배틀 친구·응원 메시지\n" +
+    "• 연속 성공 기록\n\n" +
+    "위 데이터가 영구히 삭제되며 복구할 수 없습니다."
+  );
+  if (!ok1) return;
+  const typed = prompt('삭제하려면 "삭제"라고 입력해 주세요.');
+  if (typed !== "삭제") {
+    showToast("계정 삭제가 취소되었습니다.");
+    return;
+  }
+
+  try {
+    if (supabase) {
+      const { data, error } = await supabase.rpc("delete_my_account");
+      if (error) throw error;
+      if (data !== "ok") throw new Error(data || "삭제 실패");
+    }
+    // 로컬 데이터도 정리
+    try {
+      const key = STATE_PREFIX + (authUser?.id || "");
+      localStorage.removeItem(key);
+      localStorage.removeItem("pending-invite");
+    } catch {}
+    if (supabase) await supabase.auth.signOut().catch(() => {});
+    authUser = null;
+    state = defaultState();
+    history.replaceState(null, "", "/");
+    showAuth("계정이 삭제되었습니다. 그동안 이용해 주셔서 감사합니다.");
+  } catch (err) {
+    console.warn("계정 삭제 실패:", err);
+    alert("계정 삭제에 실패했어요. 잠시 후 다시 시도하거나 고객센터로 문의해 주세요.");
+  }
+}
+
 async function enterDashboard(user) {
   authUser = user;
   state = await loadState();
@@ -1914,6 +1953,7 @@ els.resetWeek.addEventListener("click", () => {
 els.loginKakao.addEventListener("click", () => signInWithProvider("kakao"));
 els.loginGoogle.addEventListener("click", () => signInWithProvider("google"));
 els.logout.addEventListener("click", signOut);
+document.querySelector("#delete-account")?.addEventListener("click", deleteMyAccount);
 
 // 기록 저장 — debounce 우회하고 즉시 Supabase에 강제 동기화
 async function saveRecordNow() {

@@ -2815,3 +2815,13 @@ h3 { margin-bottom: 0; font-size: 15px; font-weight: 600; }
 }
 .bchat-edit:active { color: var(--ink); }
 .bchat-delete:active { color: #c0392b; }
+
+/* 계정 삭제 버튼 — 눈에 덜 띄게, 위험 색 */
+.text-button.danger-link {
+  color: #b0a99e;
+  font-size: 11px;
+  text-decoration: underline;
+  border: none;
+  background: none;
+}
+.text-button.danger-link:active { color: #c0392b; }

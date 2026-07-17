@@ -45,10 +45,7 @@ const els = {
   onbHeight: document.querySelector("#onb-height"),
   onbWeight: document.querySelector("#onb-weight"),
   onbLoss: document.querySelector("#onb-loss"),
-  onbCycle: document.querySelector("#onb-cycle"),
-  onbLastPeriod: document.querySelector("#onb-last-period"),
   genderPair: document.querySelector("#gender-pair"),
-  cycleBox: document.querySelector("#cycle-box"),
   activityPair: document.querySelector("#activity-pair"),
   conditionsList: document.querySelector("#conditions-list"),
   weeklyView: document.querySelector("#weekly-view"),
@@ -451,18 +448,10 @@ function defaultState() {
       onboarded: false,
       age: "",
       gender: "",
-      cyclePattern: "",
-      lastPeriodDate: "",
       activityLevel: 3,
       height: "",
       weight: "",
       loss: "",
-      conditions: {
-        diabetes: { checked: false, values: {} },
-        hyperlipidemia: { checked: false, values: {} },
-        hypertension: { checked: false, values: {} },
-        fattyLiver: { checked: false, values: {} },
-      },
       targets: null,
       pendingRecommendation: null,
       appliedPlan: null,
@@ -481,18 +470,11 @@ function mergeSavedState(saved) {
   if (!saved) return base;
   const baseProf = base.profile;
   const savedProf = saved.profile || {};
-  const mergedConditions = { ...baseProf.conditions };
-  if (savedProf.conditions) {
-    for (const key of CONDITION_KEYS) {
-      if (savedProf.conditions[key]) {
-        mergedConditions[key] = {
-          checked: Boolean(savedProf.conditions[key].checked),
-          values: { ...(savedProf.conditions[key].values || {}) },
-        };
-      }
-    }
-  }
-  const profile = { ...baseProf, ...savedProf, conditions: mergedConditions };
+  const profile = { ...baseProf, ...savedProf };
+  // 질환·생리주기(민감정보) 수집 중단 — 기존 저장분도 파기
+  delete profile.conditions;
+  delete profile.cyclePattern;
+  delete profile.lastPeriodDate;
   if (!profile.onboarded && profile.targets) profile.onboarded = true;
   const view = profile.onboarded ? saved.view || "weekly" : "onboarding";
   // 앱을 새로 열 때는 항상 오늘 날짜로 시작 (지난 주/지난 날짜에 머무는 문제 방지)
@@ -739,81 +721,15 @@ function renderOnboarding() {
   if (els.onbHeight) els.onbHeight.value = p.height || "";
   if (els.onbWeight) els.onbWeight.value = p.weight || "";
   if (els.onbLoss) els.onbLoss.value = p.loss || "";
-  if (els.onbCycle) els.onbCycle.value = p.cyclePattern || "";
-  if (els.onbLastPeriod) els.onbLastPeriod.value = p.lastPeriodDate || "";
 
   els.genderPair.querySelectorAll(".toggle-option").forEach((btn) => {
     btn.classList.toggle("is-active", btn.dataset.value === p.gender);
   });
-  els.cycleBox.classList.toggle("is-hidden", p.gender !== "female");
 
   els.activityPair.querySelectorAll(".activity-option").forEach((btn) => {
     btn.classList.toggle("is-active", Number(btn.dataset.value) === Number(p.activityLevel));
   });
 
-  renderConditionsList();
-}
-
-function renderConditionsList() {
-  const valuesByKey = {
-    diabetes: [
-      { name: "fastingGlucose", label: "공복혈당 (mg/dL)", placeholder: "예: 110 또는 모름" },
-      { name: "hba1c", label: "HbA1c (%)", placeholder: "예: 6.2 또는 모름" },
-    ],
-    hyperlipidemia: [
-      { name: "ldl", label: "LDL 콜레스테롤 (mg/dL)", placeholder: "예: 145 또는 모름" },
-    ],
-    hypertension: [
-      { name: "systolic", label: "수축기 (mmHg)", placeholder: "예: 135" },
-      { name: "diastolic", label: "이완기 (mmHg)", placeholder: "예: 88" },
-    ],
-    fattyLiver: [
-      { name: "ast", label: "AST (U/L)", placeholder: "예: 45 또는 모름" },
-      { name: "alt", label: "ALT (U/L)", placeholder: "예: 55 또는 모름" },
-    ],
-  };
-
-  els.conditionsList.innerHTML = CONDITION_KEYS.map((key) => {
-    const cond = state.profile.conditions[key];
-    const fields = valuesByKey[key] || [];
-    const valuesHTML =
-      cond.checked && fields.length
-        ? `<div class="condition-values ${fields.length > 1 ? "two-col" : ""}">
-            ${fields
-              .map(
-                (f) => `
-                <label>${f.label}
-                  <input type="text" data-cond="${key}" data-field="${f.name}" placeholder="${f.placeholder}" value="${escapeHTML(cond.values[f.name] || "")}" />
-                </label>`,
-              )
-              .join("")}
-          </div>`
-        : "";
-    return `
-      <div class="condition-item ${cond.checked ? "is-checked" : ""}">
-        <label class="checkbox-row">
-          <input type="checkbox" data-condition="${key}" ${cond.checked ? "checked" : ""} />
-          <span>${CONDITION_LABELS[key]}</span>
-        </label>
-        ${valuesHTML}
-      </div>
-    `;
-  }).join("");
-
-  els.conditionsList.querySelectorAll("input[data-condition]").forEach((checkbox) => {
-    checkbox.addEventListener("change", () => {
-      const key = checkbox.dataset.condition;
-      state.profile.conditions[key].checked = checkbox.checked;
-      renderConditionsList();
-    });
-  });
-  els.conditionsList.querySelectorAll("input[data-cond]").forEach((input) => {
-    input.addEventListener("input", () => {
-      const key = input.dataset.cond;
-      const field = input.dataset.field;
-      state.profile.conditions[key].values[field] = input.value;
-    });
-  });
 }
 
 function submitOnboarding(event) {
@@ -823,8 +739,6 @@ function submitOnboarding(event) {
   p.height = els.onbHeight.value.trim();
   p.weight = els.onbWeight.value.trim();
   p.loss = els.onbLoss.value.trim();
-  p.cyclePattern = els.onbCycle.value;
-  p.lastPeriodDate = els.onbLastPeriod.value.trim();
 
   if (!p.age || !p.height || !p.weight || !p.loss) {
     alert("나이·키·체중·감량 목표를 모두 입력해 주세요.");
@@ -1931,7 +1845,6 @@ els.genderPair.addEventListener("click", (event) => {
   els.genderPair.querySelectorAll(".toggle-option").forEach((b) => {
     b.classList.toggle("is-active", b === btn);
   });
-  els.cycleBox.classList.toggle("is-hidden", state.profile.gender !== "female");
 });
 
 els.activityPair.addEventListener("click", (event) => {

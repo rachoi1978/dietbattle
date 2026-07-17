@@ -16,7 +16,7 @@
     <link rel="preconnect" href="https://rsms.me/" />
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/[email protected]/iconfont/tabler-icons.min.css" />
-    <link rel="stylesheet" href="/styles.css?v=15" />
+    <link rel="stylesheet" href="/styles.css?v=17" />
   </head>
   <body>
 
@@ -30,7 +30,7 @@
     <main class="auth-screen" id="auth-screen">
       <section class="auth-panel">
         <div class="auth-brand">
-          <img class="auth-wordmark" src="/logo-full.png?v=15" alt="다이어트배틀" />
+          <img class="auth-wordmark" src="/logo-full.png?v=17" alt="다이어트배틀" />
           <p class="eyebrow">AI diet calendar</p>
         </div>
         <div class="auth-grid social-only">
@@ -42,6 +42,7 @@
             <button class="kakao-button" id="login-kakao" type="button">카카오로 로그인</button>
             <button class="google-button" id="login-google" type="button">구글로 로그인</button>
             <p class="form-message" id="auth-message"></p>
+            <p class="auth-legal">로그인하면 <a href="/privacy.html" target="_blank">개인정보처리방침</a>에 동의하는 것으로 간주됩니다. 음식 분석 시 입력한 텍스트·사진이 AI 분석(Google Gemini)을 위해 전송됩니다.</p>
           </section>
         </div>
       </section>
@@ -51,7 +52,7 @@
 
       <header class="topbar">
         <a class="brand-mark" href="#" id="brand-home" aria-label="주간 화면으로">
-          <img class="brand-wordmark" src="/logo-full.png?v=15" alt="다이어트배틀" />
+          <img class="brand-wordmark" src="/logo-full.png?v=17" alt="다이어트배틀" />
         </a>
         <div class="topbar-row">
           <div class="user-menu-wrap">
@@ -117,22 +118,6 @@
               <button type="button" class="toggle-option" data-value="male">남자</button>
               <button type="button" class="toggle-option" data-value="female">여자</button>
             </div>
-            <div class="cycle-box is-hidden" id="cycle-box">
-              <p class="cycle-arrow">여자 선택 시 ↓</p>
-              <label>생리주기 패턴
-                <select id="onb-cycle">
-                  <option value="">선택</option>
-                  <option value="regular">규칙적 (28일 주기)</option>
-                  <option value="slightly_irregular">약간 불규칙 (25–32일)</option>
-                  <option value="irregular">불규칙</option>
-                  <option value="none">폐경/없음</option>
-                </select>
-              </label>
-              <label>마지막 생리 시작일 (선택)
-                <input id="onb-last-period" type="text" placeholder="2026-05-01 또는 모름" />
-              </label>
-              <p class="section-hint pink">→ AI가 황체기/난포기에 따라 영양 균형과 감량 페이스를 조정합니다.</p>
-            </div>
           </section>
 
           <section class="panel section-activity">
@@ -152,16 +137,6 @@
               <span>아주<br/>적음</span><span>적음</span><span>보통</span><span>많음</span><span>아주<br/>많음</span>
             </div>
             <p class="section-hint">사무직·자주 앉아 있음 → 1–2 / 자주 걷고 가벼운 활동 → 3 / 운동 주 3–4회 → 4 / 매일 강도 높은 운동 → 5</p>
-          </section>
-
-          <section class="panel section-health">
-            <div class="section-header">
-              <span class="section-dot" style="background:#e0a21a"></span>
-              <p class="section-label health-label">Health</p>
-            </div>
-            <h3>병력 (선택)</h3>
-            <p class="section-hint amber">해당 항목 체크하고 수치를 알면 입력. <strong>"모름"</strong>으로 두면 평균값으로 분석돼요.</p>
-            <div class="conditions-list" id="conditions-list"></div>
           </section>
 
           <button class="primary-button submit-onboarding" type="submit">맞춤 목표 추천 받기 →</button>
@@ -589,6 +564,6 @@
       </div>
     </div>
 
-    <script type="module" src="/app.js?v=15"></script>
+    <script type="module" src="/app.js?v=17"></script>
   </body>
 </html>

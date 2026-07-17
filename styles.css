@@ -119,7 +119,7 @@ h3 { margin-bottom: 0; font-size: 15px; font-weight: 600; }
   display: grid;
   place-items: center;
   padding: 24px;
-  background: #f3ede9;
+  background: #f0eae4;
 }
 .auth-panel {
   width: min(720px, 100%);
